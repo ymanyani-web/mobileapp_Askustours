@@ -1,0 +1,14 @@
+<?php
+require 'includes/bootstrap.php';require_admin();require 'includes/layout.php';
+$view=$_GET['view']??'trips';if(!in_array($view,['trips','drafts'],true))$view='trips';
+if($_SERVER['REQUEST_METHOD']==='POST'){
+ verify_csrf();$id=(string)($_POST['id']??'');$status=(string)($_POST['status']??'');
+ if($view==='trips'&&in_array($status,['draft','submitted','in_review','proposal_ready','closed'],true))db()->prepare('UPDATE trip_requests SET status=?,revision=revision+1 WHERE id=?')->execute([$status,$id]);
+ if($view==='drafts'&&in_array($status,['draft','review','approved','rejected'],true))db()->prepare('UPDATE partner_service_drafts SET status=?,revision=revision+1 WHERE id=?')->execute([$status,$id]);
+ flash('success','Workflow status updated.');redirect('operations.php?view='.$view);
+}
+if($view==='trips')$rows=db()->query("SELECT t.id,t.status,t.revision,t.answers_json payload,t.updated_at,CONCAT(u.first_name,' ',u.last_name) owner_name FROM trip_requests t JOIN users u ON u.id=t.user_id ORDER BY t.updated_at DESC")->fetchAll();
+else $rows=db()->query("SELECT d.id,d.status,d.revision,d.service_type,d.service_json payload,d.updated_at,CONCAT(u.first_name,' ',u.last_name) owner_name FROM partner_service_drafts d JOIN users u ON u.id=d.user_id ORDER BY d.updated_at DESC")->fetchAll();
+page_header('Workflow review');?>
+<div class="filters people-tabs"><a class="<?=$view==='trips'?'active':''?>" href="?view=trips">Trip enquiries</a><a class="<?=$view==='drafts'?'active':''?>" href="?view=drafts">Collaborator service drafts</a></div><section class="panel"><div class="panel-head"><div><p class="eyebrow">REVIEW QUEUE</p><h3><?=count($rows)?> records</h3></div></div><div class="table-wrap"><table><thead><tr><th>Record</th><th>Owner</th><th>Type</th><th>Payload preview</th><th>Status</th></tr></thead><tbody><?php foreach($rows as $row):?><tr><td><strong><?=e(substr($row['id'],0,16))?></strong><small>Revision <?=(int)$row['revision']?> · <?=e($row['updated_at'])?></small></td><td><?=e($row['owner_name'])?></td><td><?=e($view==='trips'?'Itinerary':ucfirst($row['service_type']))?></td><td><small><?=e(mb_strimwidth($row['payload'],0,140,'…'))?></small></td><td><form method="post" class="status-form"><input type="hidden" name="_csrf" value="<?=csrf()?>"><input type="hidden" name="id" value="<?=e($row['id'])?>"><select name="status" onchange="this.form.submit()"><?php $states=$view==='trips'?['draft','submitted','in_review','proposal_ready','closed']:['draft','review','approved','rejected'];foreach($states as $s):?><option value="<?=$s?>" <?=$row['status']===$s?'selected':''?>><?=ucwords(str_replace('_',' ',$s))?></option><?php endforeach;?></select></form></td></tr><?php endforeach;?><?php if(!$rows):?><tr><td colspan="5" class="empty">No records found.</td></tr><?php endif;?></tbody></table></div></section>
+<?php page_footer();

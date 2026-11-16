@@ -1,0 +1,11 @@
+USE askustours_test_legacy;
+-- Password: password (change immediately after first installation)
+INSERT INTO admins(name,email,password_hash) VALUES ('System Administrator','admin@askustours.com','$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.');
+INSERT INTO categories(name_en,name_ar,icon,sort_order) VALUES ('Hotels','فنادق','▤',1),('Flights','طيران','✈',2),('Visas','تأشيرات','▣',3),('Activities','فعاليات','♨',4);
+INSERT INTO banners(title,subtitle,link_url,sort_order) VALUES ('Arrive in style','Premium cars with professional drivers','#vehicles',1),('Discover Riyadh','Curated stays and unforgettable experiences','#hotels',2);
+INSERT INTO services(name_en,name_ar,short_description,price_from,sort_order) VALUES ('International driving permit','رخصة دولية','Travel-ready documentation support',45,1),('Travel insurance','تأمين السفر','Flexible worldwide protection',35,2),('Event tickets','حجوزات','Tickets for attractions and activities',25,3);
+INSERT INTO destinations(name_en,name_ar,country_code,sort_order) VALUES ('United Kingdom','بريطانيا','GB',1),('Germany','ألمانيا','DE',2),('Spain','اسبانيا','ES',3),('France','فرنسا','FR',4);
+INSERT INTO hotels(name,city,country,star_rating,price_per_night,sort_order) VALUES ('The Boulevard Riyadh','Riyadh','Saudi Arabia',5,320,1),('Narcissus Hotel','Riyadh','Saudi Arabia',5,285,2);
+INSERT INTO vehicles(name,vehicle_type,seats,price_per_day,driver_name,sort_order) VALUES ('Mercedes-Benz S-Class','Luxury sedan',3,450,'Assigned after booking',1),('Mercedes V-Class','Premium van',7,520,'Assigned after booking',2);
+INSERT INTO customers(full_name,email,phone) VALUES ('Omar Al-Farsi','omar@example.com','+966 55 123 4567'),('Sara Ahmed','sara@example.com','+966 50 987 6543');
+INSERT INTO bookings(booking_code,customer_id,booking_type,item_id,start_date,end_date,pickup_location,dropoff_location,guests,total_amount,status) VALUES ('ASK-261112-A1B2C3',1,'vehicle',1,'2026-11-15','2026-11-17','King Khalid Airport','Riyadh Boulevard',2,900,'confirmed'),('ASK-261112-D4E5F6',2,'hotel',1,'2026-12-02','2026-12-05','Riyadh',NULL,2,960,'pending');

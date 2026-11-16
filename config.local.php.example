@@ -1,0 +1,13 @@
+<?php
+// Copy to config.local.php on the server. Never commit or share the real file.
+return [
+    // Staging only. Leave empty in production until SMS/email delivery is configured.
+    'auth_dev_code' => '',
+    'db' => [
+        'host' => 'localhost',
+        'port' => '3306',
+        'name' => 'your_database_name',
+        'user' => 'your_database_user',
+        'pass' => 'your_rotated_database_password',
+    ],
+];
