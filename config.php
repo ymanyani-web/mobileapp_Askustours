@@ -8,11 +8,11 @@ $settings=[
     //'base_url' => getenv('APP_URL') ?: 'http://localhost:8000',
     'base_url' => $env('APP_URL', 'https://admin.askustours.com'),
     'db' => [
-        'host' => $env('DB_HOST', '127.0.0.1'),
-        'port' => $env('DB_PORT', '3306'),
-        'name' => $env('DB_NAME', 'askustours'),
-        'user' => $env('DB_USER', 'root'),
-        'pass' => $env('DB_PASS', ''),
+        'host' => getenv('DB_HOST') ?: '127.0.0.1',
+        'port' => getenv('DB_PORT') ?: '3306',
+        'name' => getenv('DB_NAME') ?: 'u452414377_mbapp',
+        'user' => getenv('DB_USER') ?: 'u452414377_mbapp',
+        'pass' => getenv('DB_PASS') ?: 'aw5AFFpx5kIJAwMNBJB1',
     ],
 ];
 $localFile=__DIR__.'/config.local.php';
@@ -25,10 +25,6 @@ return [
     //'base_url' => getenv('APP_URL') ?: 'http://localhost:8000',
     'base_url' => getenv('APP_URL') ?: 'https://admin.askustours.com',
     'db' => [
-        'host' => getenv('DB_HOST') ?: '127.0.0.1',
-        'port' => getenv('DB_PORT') ?: '3306',
-        'name' => getenv('DB_NAME') ?: 'u452414377_mbapp',
-        'user' => getenv('DB_USER') ?: 'u452414377_mbapp',
-        'pass' => getenv('DB_PASS') ?: 'aw5AFFpx5kIJAwMNBJB1',
+        
     ],
 ]; */
