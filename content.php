@@ -1,5 +1,5 @@
 <?php
-require 'includes/bootstrap.php'; require_admin(); redirect('catalog.php?view='.urlencode($_GET['type']??'drivers')); require 'includes/layout.php';
+require 'includes/bootstrap.php'; require_admin(); require 'includes/layout.php';
 $resources = [
  'banners'=>['title'=>'Promotional banners','table'=>'banners','fields'=>['title','subtitle','link_url','sort_order'],'image'=>true],
  'categories'=>['title'=>'Home categories','table'=>'categories','fields'=>['name_en','name_ar','icon','sort_order'],'image'=>false],
