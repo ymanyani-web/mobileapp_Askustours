@@ -3,6 +3,22 @@
 return [
     // Staging only. Leave empty in production until SMS/email delivery is configured.
     'auth_dev_code' => '',
+    'api_public_base_url' => 'https://api.example.com/v1',
+    // The webhook receives JSON: channel, destination, code, sender and expiresInSeconds.
+    // It must return any 2xx response after the provider accepts the message.
+    'otp' => [
+        'webhook_url' => 'https://notifications.example.com/otp',
+        'webhook_token' => 'replace-with-a-secret-token',
+        'sender' => 'ASKUSTOURS',
+        'timeout_seconds' => 8,
+    ],
+    'calendar' => [
+        'horizon_days' => 120,
+    ],
+    'cors_allowed_origins' => [
+        'https://admin.example.com',
+        'https://app.example.com',
+    ],
     'db' => [
         'host' => 'localhost',
         'port' => '3306',

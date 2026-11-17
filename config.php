@@ -5,14 +5,25 @@ $env=static function(string $key,string $default):string{$value=getenv($key);ret
 $settings=[
     'app_name' => 'AskUs Tours',
     'auth_dev_code' => $env('AUTH_DEV_CODE', ''),
+    'api_public_base_url' => rtrim($env('API_PUBLIC_BASE_URL', 'https://api.askustours.com/v1'), '/'),
+    'otp' => [
+        'webhook_url' => $env('AUTH_OTP_WEBHOOK_URL', ''),
+        'webhook_token' => $env('AUTH_OTP_WEBHOOK_TOKEN', ''),
+        'sender' => $env('AUTH_OTP_SENDER', 'ASKUSTOURS'),
+        'timeout_seconds' => (int)$env('AUTH_OTP_TIMEOUT_SECONDS', '8'),
+    ],
+    'calendar' => [
+        'horizon_days' => (int)$env('CALENDAR_HORIZON_DAYS', '120'),
+    ],
+    'cors_allowed_origins' => array_values(array_filter(array_map('trim', explode(',', $env('CORS_ALLOWED_ORIGINS', 'https://admin.askustours.com'))))),
     //'base_url' => getenv('APP_URL') ?: 'http://localhost:8000',
     'base_url' => $env('APP_URL', 'https://admin.askustours.com'),
     'db' => [
         'host' => getenv('DB_HOST') ?: '127.0.0.1',
         'port' => getenv('DB_PORT') ?: '3306',
-        'name' => getenv('DB_NAME') ?: 'u452414377_mbapp',
-        'user' => getenv('DB_USER') ?: 'u452414377_mbapp',
-        'pass' => getenv('DB_PASS') ?: 'aw5AFFpx5kIJAwMNBJB1',
+        'name' => getenv('DB_NAME') ?: 'askustours',
+        'user' => getenv('DB_USER') ?: 'root',
+        'pass' => getenv('DB_PASS') ?: '',
     ],
 ];
 $localFile=__DIR__.'/config.local.php';

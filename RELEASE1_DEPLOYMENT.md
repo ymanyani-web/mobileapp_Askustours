@@ -14,7 +14,11 @@ Release 1 implements the operational path: catalog → verified session → serv
 
 Create `config.local.php` from `config.local.php.example` on Hostinger and insert the rotated database credentials. Never upload that file to a public repository.
 
-For staging-only OTP testing, set `AUTH_DEV_CODE` to a test code such as `123456`. Do not set it in production. Without a real email/SMS provider or this staging variable, challenge creation intentionally returns HTTP 503.
+For staging-only OTP testing, set `AUTH_DEV_CODE` to a test code such as `123456`. Do not set it in production. Production OTP delivery requires `AUTH_OTP_WEBHOOK_URL`, `AUTH_OTP_WEBHOOK_TOKEN`, and `AUTH_OTP_SENDER`; the PHP cURL extension must be enabled. Without a provider or the staging variable, challenge creation intentionally returns HTTP 503.
+
+Set `API_PUBLIC_BASE_URL` to the public versioned API base, for example `https://api.askustours.com/v1`. `CALENDAR_HORIZON_DAYS` defaults to 120.
+
+Set `CORS_ALLOWED_ORIGINS` to the comma-separated HTTPS origins allowed to run the Flutter web client. Native Android/iOS requests normally have no browser `Origin` header. Database credentials must be supplied through environment variables or the untracked `config.local.php`; no production database password is stored in the repository. Rotate any credential that was previously committed.
 
 Do not set `APP_DEBUG=1` in production.
 
@@ -24,7 +28,7 @@ Import `database/schema.sql`, then `database/seed.sql`. Initial administrator cr
 
 ## Existing installation
 
-Do not import the full seed again. Upload the application files, preserve your current database, and update the administrator password through a freshly generated `password_hash()` value if needed.
+Do not import the full seed again. Back up the database, apply `database/migration_2026_11_17_mobile_handoff.sql` and `database/migration_2026_11_17_home_banners.sql` once, upload the application files, preserve your current data, and update the administrator password through a freshly generated `password_hash()` value if needed.
 
 ## Smoke checks
 
@@ -35,6 +39,12 @@ Do not import the full seed again. Upload the application files, preserve your c
 5. Reusing an Idempotency-Key with the same reservation body returns the original request; changing the body returns HTTP 409.
 6. Admin can assign only an approved collaborator.
 7. The collaborator can accept or decline only an assigned request with the current version.
+8. Cursor pagination returns a non-null `nextCursor` when more reservation, draft, or job records exist.
+9. An uploaded partner image can be previewed through its authenticated media URL.
+10. The availability dashboard populates an explicit range that appears in the driver calendar response.
+11. Upload two dashboard banners with different display-order values and confirm `/v1/home` returns their absolute image URLs in ascending order.
+
+Before running the mobile staging matrix, approve a collaborator, review its service drafts, publish reviewed catalog records, populate explicit availability, and assign a request only to an approved collaborator. These dashboard mutations are recorded in `audit_log`.
 
 ## Production boundaries
 

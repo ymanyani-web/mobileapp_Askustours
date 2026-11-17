@@ -3,7 +3,7 @@ require 'includes/bootstrap.php'; require_admin(); require 'includes/layout.php'
 $view=$_GET['view']??'customers';if(!in_array($view,['customers','collaborators'],true))$view='customers';
 if($_SERVER['REQUEST_METHOD']==='POST'&&$view==='collaborators'){
  verify_csrf();$uid=(string)($_POST['user_id']??'');$status=(string)($_POST['status']??'');
- if($uid!==''&&in_array($status,['draft','submitted','approved','rejected','suspended'],true)){db()->prepare('UPDATE partner_profiles SET status=?,reviewed_at=NOW(),reviewed_by=? WHERE user_id=?')->execute([$status,admin()['id'],$uid]);flash('success','Collaborator review updated.');}
+ if($uid!==''&&in_array($status,['draft','submitted','approved','rejected','suspended'],true)){db()->beginTransaction();db()->prepare('UPDATE partner_profiles SET status=?,reviewed_at=NOW(),reviewed_by=? WHERE user_id=?')->execute([$status,admin()['id'],$uid]);db()->prepare("INSERT INTO audit_log(admin_id,action,entity_type,entity_id,details_json) VALUES(?,'partner_profile.status_changed','partner_profile',?,?)")->execute([admin()['id'],$uid,json_encode(['status'=>$status])]);db()->commit();flash('success','Collaborator review updated.');}
  redirect('users.php?view=collaborators');
 }
 if($view==='customers'){$rows=db()->query("SELECT u.*,COUNT(r.id) reservation_count FROM users u LEFT JOIN reservations r ON r.customer_user_id=u.id WHERE u.role='customer' GROUP BY u.id ORDER BY u.created_at DESC")->fetchAll();}

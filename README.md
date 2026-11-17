@@ -20,14 +20,10 @@ Initial login: `admin@askustours.com` / `password`. Change it immediately in pro
 
 ## Mobile API
 
-- `GET /api/v1/home.php` returns all visible app content.
-- `POST /api/v1/create-booking.php` creates or updates a client and stores a mobile reservation.
-- `GET /api/v1/booking-status.php?booking_code=...&phone=...` returns the current reservation status.
+The active API is versioned under `/api/v1` and documented in `RELEASE1_API.md`. It provides public catalogs, verified sessions, owner-scoped profiles/media, quotes, reservation requests, favorites, basket data, collaborator drafts/jobs, calendars, and read-only wallets.
 
-Example booking body:
+Home banner images are managed from **Home banners** in the dashboard. Active banners are returned by `/api/v1/home` in ascending display order.
 
-```json
-{"full_name":"Sara Ahmed","phone":"+966500000000","booking_type":"vehicle","item_id":1,"start_date":"2026-12-01","end_date":"2026-12-03","pickup_location":"King Khalid Airport","dropoff_location":"Riyadh Boulevard","total_amount":900}
-```
+The former `create-booking.php` and `booking-status.php` routes return HTTP 410. Mobile clients must use quotes, authenticated reservation requests, and reservation history.
 
 For production, use HTTPS, change the initial administrator password, restrict CORS to the mobile app's origin, and keep secrets in environment variables.

@@ -4,11 +4,11 @@ $allowed=['requested','assigned','accepted','declined','cancelled','completed'];
 if($_SERVER['REQUEST_METHOD']==='POST'){
  verify_csrf(); $id=(string)($_POST['id']??''); $status=(string)($_POST['status']??''); $partnerId=trim((string)($_POST['partner_user_id']??''));
  if($id!==''&&($_POST['action']??'status')==='assign'){
-  if($partnerId===''){$stmt=db()->prepare("UPDATE reservations SET partner_user_id=NULL,status=IF(status='assigned','requested',status),version=version+1 WHERE id=?");$stmt->execute([$id]);}
-  else{$check=db()->prepare("SELECT u.id FROM users u JOIN partner_profiles p ON p.user_id=u.id WHERE u.id=? AND p.status='approved'");$check->execute([$partnerId]);if(!$check->fetchColumn())throw new RuntimeException('Only approved collaborators can be assigned.');$stmt=db()->prepare("UPDATE reservations SET partner_user_id=?,status=IF(status='requested','assigned',status),version=version+1 WHERE id=?");$stmt->execute([$partnerId,$id]);}
+  db()->beginTransaction();if($partnerId===''){$stmt=db()->prepare("UPDATE reservations SET partner_user_id=NULL,status=IF(status='assigned','requested',status),version=version+1 WHERE id=?");$stmt->execute([$id]);}
+  else{$check=db()->prepare("SELECT u.id FROM users u JOIN partner_profiles p ON p.user_id=u.id WHERE u.id=? AND p.status='approved'");$check->execute([$partnerId]);if(!$check->fetchColumn())throw new RuntimeException('Only approved collaborators can be assigned.');$stmt=db()->prepare("UPDATE reservations SET partner_user_id=?,status=IF(status='requested','assigned',status),version=version+1 WHERE id=?");$stmt->execute([$partnerId,$id]);}db()->prepare("INSERT INTO audit_log(admin_id,action,entity_type,entity_id,details_json) VALUES(?,'reservation.assignment_changed','reservation',?,?)")->execute([admin()['id'],$id,json_encode(['partnerUserId'=>$partnerId?:null])]);db()->commit();
   flash('success','Collaborator assignment updated.');
  } elseif($id!==''&&in_array($status,$allowed,true)){
-  $stmt=db()->prepare('UPDATE reservations SET status=?,version=version+1 WHERE id=?'); $stmt->execute([$status,$id]); flash('success','Service request status updated.');
+  db()->beginTransaction();$stmt=db()->prepare('UPDATE reservations SET status=?,version=version+1 WHERE id=?'); $stmt->execute([$status,$id]);db()->prepare("INSERT INTO audit_log(admin_id,action,entity_type,entity_id,details_json) VALUES(?,'reservation.status_changed','reservation',?,?)")->execute([admin()['id'],$id,json_encode(['status'=>$status])]);db()->commit();flash('success','Service request status updated.');
  }
  redirect('reservations.php');
 }

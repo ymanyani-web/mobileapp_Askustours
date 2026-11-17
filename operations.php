@@ -3,8 +3,8 @@ require 'includes/bootstrap.php';require_admin();require 'includes/layout.php';
 $view=$_GET['view']??'trips';if(!in_array($view,['trips','drafts'],true))$view='trips';
 if($_SERVER['REQUEST_METHOD']==='POST'){
  verify_csrf();$id=(string)($_POST['id']??'');$status=(string)($_POST['status']??'');
- if($view==='trips'&&in_array($status,['draft','submitted','in_review','proposal_ready','closed'],true))db()->prepare('UPDATE trip_requests SET status=?,revision=revision+1 WHERE id=?')->execute([$status,$id]);
- if($view==='drafts'&&in_array($status,['draft','review','approved','rejected'],true))db()->prepare('UPDATE partner_service_drafts SET status=?,revision=revision+1 WHERE id=?')->execute([$status,$id]);
+ if($view==='trips'&&in_array($status,['draft','submitted','in_review','proposal_ready','closed'],true)){db()->beginTransaction();db()->prepare('UPDATE trip_requests SET status=?,revision=revision+1 WHERE id=?')->execute([$status,$id]);db()->prepare("INSERT INTO audit_log(admin_id,action,entity_type,entity_id,details_json) VALUES(?,'trip_request.status_changed','trip_request',?,?)")->execute([admin()['id'],$id,json_encode(['status'=>$status])]);db()->commit();}
+ if($view==='drafts'&&in_array($status,['draft','review','approved','rejected'],true)){db()->beginTransaction();db()->prepare('UPDATE partner_service_drafts SET status=?,revision=revision+1 WHERE id=?')->execute([$status,$id]);db()->prepare("INSERT INTO audit_log(admin_id,action,entity_type,entity_id,details_json) VALUES(?,'partner_service.status_changed','partner_service_draft',?,?)")->execute([admin()['id'],$id,json_encode(['status'=>$status])]);db()->commit();}
  flash('success','Workflow status updated.');redirect('operations.php?view='.$view);
 }
 if($view==='trips')$rows=db()->query("SELECT t.id,t.status,t.revision,t.answers_json payload,t.updated_at,CONCAT(u.first_name,' ',u.last_name) owner_name FROM trip_requests t JOIN users u ON u.id=t.user_id ORDER BY t.updated_at DESC")->fetchAll();

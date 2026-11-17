@@ -60,6 +60,16 @@ VALUES
 ('guide','30000000-0000-4000-8000-000000000001',DATE_ADD(CURDATE(),INTERVAL 14 DAY),1,9500,JSON_OBJECT('demo',true))
 ON DUPLICATE KEY UPDATE available=VALUES(available),price_minor=VALUES(price_minor),details_json=VALUES(details_json);
 
+-- Populate a complete explicit 120-day demo horizon. The two overrides above remain authoritative.
+INSERT IGNORE INTO service_calendar(service_type,service_id,service_date,available,price_minor,details_json)
+SELECT 'driver','20000000-0000-4000-8000-000000000001',DATE_ADD(CURDATE(),INTERVAL numbers.n DAY),1,8500,JSON_OBJECT('demo',true,'source','generated-demo-horizon')
+FROM (
+ SELECT ones.n + tens.n*10 + hundreds.n*100 n
+ FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) ones
+ CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) tens
+ CROSS JOIN (SELECT 0 n UNION ALL SELECT 1) hundreds
+) numbers WHERE numbers.n BETWEEN 0 AND 120;
+
 INSERT INTO reviews(id,service_type,service_id,rating,author_name,comment,verified,active)
 VALUES ('40000000-0000-4000-8000-000000000001','driver','20000000-0000-4000-8000-000000000001',5,'Demo Reviewer','Synthetic review for interface testing only.',0,1)
 ON DUPLICATE KEY UPDATE rating=VALUES(rating),comment=VALUES(comment),verified=0,active=1;
@@ -69,8 +79,19 @@ VALUES ('50000000-0000-4000-8000-000000000001','published',1,JSON_OBJECT(
  'id','50000000-0000-4000-8000-000000000001','demo',true,
  'title',JSON_OBJECT('es','Madrid esencial — demostración','en','Essential Madrid — demo','ar','مدريد الأساسية — تجريبي'),
  'description',JSON_OBJECT('es','Paquete ficticio para pruebas.','en','Synthetic package for testing.','ar','باقة تجريبية للاختبار.'),
- 'durationDays',3,'priceFromMinor',39900,'currency','EUR','active',true,
- 'includes',JSON_ARRAY('Demo itinerary','Demo guide'),'excludes',JSON_ARRAY('Flights','Real payment')
+  'durationDays',3,'priceFromMinor',39900,'currency','EUR','active',true,
+  'destinations',JSON_ARRAY(
+   JSON_OBJECT('cityCode','madrid','name',JSON_OBJECT('es','Madrid','en','Madrid','ar','مدريد'),'nights',2,'position',1)
+  ),
+  'image',JSON_OBJECT('url','https://images.askustours.test/demo/madrid-package.webp','alt',JSON_OBJECT('es','Madrid de demostración','en','Demo Madrid','ar','مدريد التجريبية')),
+  'itinerary',JSON_ARRAY(
+   JSON_OBJECT('day',1,'title',JSON_OBJECT('es','Llegada','en','Arrival','ar','الوصول'),'description',JSON_OBJECT('es','Recepción de demostración.','en','Synthetic welcome.','ar','استقبال تجريبي.')),
+   JSON_OBJECT('day',2,'title',JSON_OBJECT('es','Madrid histórico','en','Historic Madrid','ar','مدريد التاريخية'),'description',JSON_OBJECT('es','Ruta ficticia para pruebas.','en','Synthetic route for testing.','ar','مسار تجريبي للاختبار.')),
+   JSON_OBJECT('day',3,'title',JSON_OBJECT('es','Salida','en','Departure','ar','المغادرة'),'description',JSON_OBJECT('es','Fin del paquete de demostración.','en','End of the demo package.','ar','نهاية الباقة التجريبية.'))
+  ),
+  'includes',JSON_ARRAY('Demo itinerary','Demo guide'),'excludes',JSON_ARRAY('Flights','Real payment'),
+  'terms',JSON_OBJECT('version','demo-v1','cancellation','No commercial terms; staging fixture only.'),
+  'availability',JSON_OBJECT('requestOnly',true,'from',DATE_FORMAT(DATE_ADD(CURDATE(),INTERVAL 14 DAY),'%Y-%m-%d'),'to',DATE_FORMAT(DATE_ADD(CURDATE(),INTERVAL 180 DAY),'%Y-%m-%d'))
 ))
 ON DUPLICATE KEY UPDATE status='published',package_json=VALUES(package_json),updated_at=CURRENT_TIMESTAMP;
 
