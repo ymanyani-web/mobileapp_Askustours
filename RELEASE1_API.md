@@ -67,7 +67,7 @@ For production OTP delivery, configure `AUTH_OTP_WEBHOOK_URL`, `AUTH_OTP_WEBHOOK
 
 ## Pagination, calendars, media, and wallets
 
-`GET /home` sources `data.offers` from active dashboard banners when at least one banner with an image exists. Banners are returned in ascending `displayOrder`, then ascending ID. Each banner is projected as the complete mobile `Offer` shape with an absolute `imageUrl`. The mobile client must preserve the received order.
+`GET /home` keeps the two home image collections separate. `data.banners` contains the large slides above the shortcut menu. `data.offers` contains the smaller **Ofertas destacadas** cards below the menu. Both collections contain absolute `imageUrl` values and are ordered by ascending `displayOrder`, then ascending ID. The mobile client must preserve each collection's server order and must not reuse `offers` as the slide source.
 
 `GET /me/reservations`, `GET /me/partner-services`, and `GET /me/partner-jobs` support `limit` (1–100) and an opaque `cursor`. Use `meta.pagination.nextCursor` unchanged on the next call. `hasMore` and `total` describe the filtered collection.
 

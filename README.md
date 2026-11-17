@@ -1,6 +1,6 @@
 # AskUs Tours Admin Dashboard
 
-Native PHP/MySQL control panel for the AskUs Tours mobile application. It manages home banners, categories, services, destinations, hotels, chauffeured vehicles, customers and bookings.
+Native PHP/MySQL control panel for the AskUs Tours mobile application. It manages home slides, featured offer cards, categories, services, destinations, hotels, chauffeured vehicles, customers and bookings.
 
 ## Requirements
 
@@ -22,7 +22,7 @@ Initial login: `admin@askustours.com` / `password`. Change it immediately in pro
 
 The active API is versioned under `/api/v1` and documented in `RELEASE1_API.md`. It provides public catalogs, verified sessions, owner-scoped profiles/media, quotes, reservation requests, favorites, basket data, collaborator drafts/jobs, calendars, and read-only wallets.
 
-Home banner images are managed from **Home banners** in the dashboard. Active banners are returned by `/api/v1/home` in ascending display order.
+Large carousel images are managed from **Home slides**. The smaller **Ofertas destacadas** cards are managed independently from **Home offers**. `/api/v1/home` returns them as `banners` and `offers`, each in ascending display order.
 
 The former `create-booking.php` and `booking-status.php` routes return HTTP 410. Mobile clients must use quotes, authenticated reservation requests, and reservation history.
 

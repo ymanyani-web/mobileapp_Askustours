@@ -1,7 +1,7 @@
 <?php
 require 'includes/bootstrap.php'; require_admin(); require 'includes/layout.php';
 $view=$_GET['view']??'drivers';
-if($view==='banners')redirect('content.php?type=banners');
+if(in_array($view,['banners','offers'],true))redirect('content.php?type='.$view);
 if(!in_array($view,['drivers','guides','packages','content'],true))$view='drivers';
 $map=['drivers'=>['driver_services','service_json'],'guides'=>['guide_services','service_json'],'packages'=>['travel_packages','package_json']];
 function publication_error(string $view,array $payload,array $row=[]):?string{

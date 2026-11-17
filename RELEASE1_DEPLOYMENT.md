@@ -28,7 +28,7 @@ Import `database/schema.sql`, then `database/seed.sql`. Initial administrator cr
 
 ## Existing installation
 
-Do not import the full seed again. Back up the database, apply `database/migration_2026_11_17_mobile_handoff.sql` and `database/migration_2026_11_17_home_banners.sql` once, upload the application files, preserve your current data, and update the administrator password through a freshly generated `password_hash()` value if needed.
+Do not import the full seed again. Back up the database, apply `database/migration_2026_11_17_mobile_handoff.sql`, `database/migration_2026_11_17_home_banners.sql`, and `database/migration_2026_11_17_home_offers.sql` once, upload the application files, preserve your current data, and update the administrator password through a freshly generated `password_hash()` value if needed.
 
 ## Smoke checks
 
@@ -42,7 +42,7 @@ Do not import the full seed again. Back up the database, apply `database/migrati
 8. Cursor pagination returns a non-null `nextCursor` when more reservation, draft, or job records exist.
 9. An uploaded partner image can be previewed through its authenticated media URL.
 10. The availability dashboard populates an explicit range that appears in the driver calendar response.
-11. Upload two dashboard banners with different display-order values and confirm `/v1/home` returns their absolute image URLs in ascending order.
+11. Upload two home slides and two home offers with different display-order values. Confirm `/v1/home` returns separate `banners` and `offers` collections with absolute image URLs in ascending order.
 
 Before running the mobile staging matrix, approve a collaborator, review its service drafts, publish reviewed catalog records, populate explicit availability, and assign a request only to an approved collaborator. These dashboard mutations are recorded in `audit_log`.
 

@@ -16,7 +16,7 @@ Date: 2026-11-17. This response records repository changes made after reviewing 
 | M8 travel packages | Contract and staging fixture complete | Publication now requires ordered destinations, itinerary content, and image metadata. The staging package demonstrates destinations, media, a three-day itinerary, terms, and availability. Production content remains required. |
 | H6 dashboard lifecycle | Code complete; staging verification pending | Collaborator approval, draft review, catalog publication, availability, assignment, and request status changes are available and audited. A full mobile/staging run still needs OTP accounts and deployed infrastructure. |
 | H5 configuration hardening | Code complete; deployment verification pending | Browser origins are allow-listed through `CORS_ALLOWED_ORIGINS`, public media URLs use `API_PUBLIC_BASE_URL`, and tracked production-looking database defaults were removed. Previously exposed credentials must be rotated. |
-| Home banners and ordering | Restored | The dashboard can upload, edit, show/hide, delete, and numerically order home banners. `/home` projects active banner images into `offers` in ascending display order. Existing banner rows and upload paths are preserved by an additive migration. Mobile must keep server order. |
+| Home slides and featured offers | Restored and separated | **Home slides** manages the large carousel above the shortcut menu. **Home offers** independently manages the smaller **Ofertas destacadas** cards below it. `/home` returns slides in `banners` and cards in `offers`, each in ascending display order. Mobile must use the separate collections. |
 
 ## Items requiring external or production input
 
@@ -31,7 +31,7 @@ Date: 2026-11-17. This response records repository changes made after reviewing 
 
 ## Deployment order
 
-1. Back up the database and apply `database/migration_2026_11_17_mobile_handoff.sql`, then `database/migration_2026_11_17_home_banners.sql`.
+1. Back up the database and apply `database/migration_2026_11_17_mobile_handoff.sql`, `database/migration_2026_11_17_home_banners.sql`, then `database/migration_2026_11_17_home_offers.sql`.
 2. Deploy the PHP changes and configure `API_PUBLIC_BASE_URL`, OTP webhook variables, and the calendar horizon.
 3. Publish approved legal content and replace every `demo: true` catalog entry with reviewed inventory.
 4. Populate explicit driver availability from the dashboard.
