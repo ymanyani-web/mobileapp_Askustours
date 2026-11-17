@@ -21,9 +21,9 @@ $settings=[
     'db' => [
         'host' => getenv('DB_HOST') ?: '127.0.0.1',
         'port' => getenv('DB_PORT') ?: '3306',
-        'name' => getenv('DB_NAME') ?: 'askustours',
-        'user' => getenv('DB_USER') ?: 'root',
-        'pass' => getenv('DB_PASS') ?: '',
+        'name' => getenv('DB_NAME') ?: 'u452414377_mbapp',
+        'user' => getenv('DB_USER') ?: 'u452414377_mbapp',
+        'pass' => getenv('DB_PASS') ?: 'aw5AFFpx5kIJAwMNBJB1',
     ],
 ];
 $localFile=__DIR__.'/config.local.php';
