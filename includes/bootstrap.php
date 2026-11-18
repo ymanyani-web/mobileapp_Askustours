@@ -41,6 +41,14 @@ function public_asset_available(?string $path): bool
 {
     $path = trim((string)$path);
     if ($path === '') return false;
+    if (preg_match('#^https://#i', $path)) {
+        global $config;
+        $assetUrl = parse_url($path);
+        $baseUrl = parse_url((string)($config['base_url'] ?? ''));
+        if (!is_array($assetUrl) || empty($assetUrl['host'])) return false;
+        if (empty($baseUrl['host']) || strcasecmp((string)$assetUrl['host'], (string)$baseUrl['host']) !== 0) return true;
+        $path = rawurldecode((string)($assetUrl['path'] ?? ''));
+    }
     $relative = ltrim(str_replace('\\', '/', $path), '/');
     if ($relative === '' || str_contains($relative, '../')) return false;
     if (!preg_match('#^(?:uploads|assets)/.+\.(?:jpe?g|png|webp|svg)$#i', $relative)) return false;
