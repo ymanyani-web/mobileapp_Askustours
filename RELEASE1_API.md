@@ -77,7 +77,7 @@ Upload responses include both `id` and `uploadId`. Owned media can be read throu
 
 Exact version 1 request/response examples, data types, nullability rules, wallet units, status values, and binary media behavior are documented in `MOBILE_PRIVATE_API_V1_EXAMPLES.md`.
 
-Public home collections omit records whose local image file is missing. The dashboard marks those records as **Missing image** and requires an administrator to upload a replacement before the record can return to the mobile API.
+Public home slides omit records whose local image file is missing. The dashboard marks those records as **Missing image** and requires an administrator to upload a replacement before the slide can return to the mobile API. Featured offers retain legacy absolute-URL compatibility and must be checked by the deployment smoke test.
 
 The published synthetic travel-package fixture contains `destinations`, `image`, top-level `imageUrl`, `itinerary`, `terms`, and `availability`. It remains demo data and must not be presented as commercial inventory.
 

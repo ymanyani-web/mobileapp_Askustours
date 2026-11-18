@@ -10,7 +10,7 @@ The report correctly identified a broken first banner URL. A production read-onl
 
 The backend now:
 
-- omits any banner or featured offer whose local image file is missing;
+- omits any home slide whose local image file is missing;
 - omits missing owner-upload previews from profile and service media responses;
 - marks affected dashboard records as **Missing image — edit and re-upload**;
 - requires a valid replacement image when an administrator saves an affected home record.
