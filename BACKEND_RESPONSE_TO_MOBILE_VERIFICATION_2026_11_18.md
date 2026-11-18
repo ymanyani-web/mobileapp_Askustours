@@ -67,7 +67,20 @@ Do not place staging passwords, OTP provider secrets, or production credentials 
 - Focused assertions confirmed that missing banner files are omitted, existing assets remain available, demo package fields are complete with an absolute image URL, and missing owner-upload files do not produce media references.
 - Editor diagnostics and `git diff --check` passed for the changed code.
 
-Production public reads must be repeated after deployment. Private flows still require the staging accounts listed above.
+Production public reads were repeated after deployment as recorded below. Private flows still require the staging accounts listed above.
+
+## Production public verification
+
+After implementation commit `9cf564a` deployed on 18 November 2026:
+
+- `GET /home` returned zero banners because all three stored slide files are missing.
+- `GET /home` returned one featured offer.
+- The returned offer image responded HTTP 200 with `image/png`.
+- The travel-package collection contained every required field listed above.
+- The travel-package detail contained every required field listed above.
+- The tracked placeholder asset responded HTTP 200 with `image/svg+xml`.
+
+The remaining empty banner collection is an operational media task. Re-uploading the three intended slide images will make them return again in display order without another code change.
 
 ## Mobile re-verification requested
 
