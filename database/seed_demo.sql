@@ -83,7 +83,7 @@ VALUES ('50000000-0000-4000-8000-000000000001','published',1,JSON_OBJECT(
   'destinations',JSON_ARRAY(
    JSON_OBJECT('cityCode','madrid','name',JSON_OBJECT('es','Madrid','en','Madrid','ar','مدريد'),'nights',2,'position',1)
   ),
-  'image',JSON_OBJECT('url','https://images.askustours.test/demo/madrid-package.webp','alt',JSON_OBJECT('es','Madrid de demostración','en','Demo Madrid','ar','مدريد التجريبية')),
+  'image',JSON_OBJECT('url','assets/placeholder.svg','alt',JSON_OBJECT('es','Madrid de demostración','en','Demo Madrid','ar','مدريد التجريبية')),
   'itinerary',JSON_ARRAY(
    JSON_OBJECT('day',1,'title',JSON_OBJECT('es','Llegada','en','Arrival','ar','الوصول'),'description',JSON_OBJECT('es','Recepción de demostración.','en','Synthetic welcome.','ar','استقبال تجريبي.')),
    JSON_OBJECT('day',2,'title',JSON_OBJECT('es','Madrid histórico','en','Historic Madrid','ar','مدريد التاريخية'),'description',JSON_OBJECT('es','Ruta ficticia para pruebas.','en','Synthetic route for testing.','ar','مسار تجريبي للاختبار.')),

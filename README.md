@@ -10,7 +10,7 @@ Native PHP/MySQL control panel for the AskUs Tours mobile application. It manage
 
 ## Install
 
-1. For a new database, import `database/schema.sql`, followed by `database/seed.sql`. For an existing installation, import `database/migration_2026_11_15_operations.sql` once.
+1. For a new database, import `database/schema.sql`, followed by `database/seed.sql`. For an existing installation, back up the database and apply the ordered migrations listed in `RELEASE1_DEPLOYMENT.md`.
 2. Adjust the database values in `config.php`, or set `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASS` environment variables.
 3. Ensure the web server can write to the `uploads/` directory (it is created automatically on first upload).
 4. From this directory, run `php -S localhost:8000` for development.
@@ -19,6 +19,8 @@ Native PHP/MySQL control panel for the AskUs Tours mobile application. It manage
 Initial login: `admin@askustours.com` / `password`. Change it immediately in production.
 
 ## Mobile API
+
+Existing installations must apply the ordered migrations in `RELEASE1_DEPLOYMENT.md`; do not re-import the full seed into production.
 
 The active API is versioned under `/api/v1` and documented in `RELEASE1_API.md`. It provides public catalogs, verified sessions, owner-scoped profiles/media, quotes, reservation requests, favorites, basket data, collaborator drafts/jobs, calendars, and read-only wallets.
 

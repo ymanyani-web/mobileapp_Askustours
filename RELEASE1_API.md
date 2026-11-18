@@ -75,17 +75,11 @@ For production OTP delivery, configure `AUTH_OTP_WEBHOOK_URL`, `AUTH_OTP_WEBHOOK
 
 Upload responses include both `id` and `uploadId`. Owned media can be read through authenticated `GET /uploads/{uploadId}`. Partner profile and service responses include media objects containing both `uploadId` and `url`; the URL requires the same owner Bearer token.
 
-Partner profiles use `schemaVersion: 1`. Version 1 deliberately contains only business/contact/activity/city and professional-photo fields. Vehicle identity documents and regulatory records remain excluded until product, retention, and access rules are approved.
+Exact version 1 request/response examples, data types, nullability rules, wallet units, status values, and binary media behavior are documented in `MOBILE_PRIVATE_API_V1_EXAMPLES.md`.
 
-Wallet reads use `schemaVersion: 1` and stable movement fields: `id`, `type`, `amountMinor`, `currency`, `status`, `referenceType`, `referenceId`, `description`, and `createdAt`.
+Public home collections omit records whose local image file is missing. The dashboard marks those records as **Missing image** and requires an administrator to upload a replacement before the record can return to the mobile API.
 
-## Pagination, calendars, media, and wallets
-
-`GET /me/reservations`, `GET /me/partner-services`, and `GET /me/partner-jobs` support `limit` (1–100) and an opaque `cursor`. Use `meta.pagination.nextCursor` unchanged on the next call. `hasMore` and `total` describe the filtered collection.
-
-`GET /driver-services/{serviceId}/calendar` accepts optional `from` and `to` dates. The range cannot exceed `CALENDAR_HORIZON_DAYS` (120 by default). Its `days` array contains explicit availability records only. Administrators maintain these records from `calendar.php`; an absent date remains unavailable to the mobile client.
-
-Upload responses include both `id` and `uploadId`. Owned media can be read through authenticated `GET /uploads/{uploadId}`. Partner profile and service responses include media objects containing both `uploadId` and `url`; the URL requires the same owner Bearer token.
+The published synthetic travel-package fixture contains `destinations`, `image`, top-level `imageUrl`, `itinerary`, `terms`, and `availability`. It remains demo data and must not be presented as commercial inventory.
 
 Partner profiles use `schemaVersion: 1`. Version 1 deliberately contains only business/contact/activity/city and professional-photo fields. Vehicle identity documents and regulatory records remain excluded until product, retention, and access rules are approved.
 

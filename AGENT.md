@@ -13,6 +13,7 @@ Read these documents before changing an API or mobile-facing response:
 - `MOBILE_BACKEND_REMAINING_WORK.md`
 - `BACKEND_DAILY_HANDOFF_2026_11_17.md`
 - `MOBILE_HOME_CONTENT_SEPARATION.md`
+- `MOBILE_PRIVATE_API_V1_EXAMPLES.md`
 - `RELEASE1_API.md`
 - `RELEASE1_DEPLOYMENT.md`
 
@@ -144,6 +145,8 @@ Return `meta.pagination.limit`, `nextCursor`, `hasMore`, and `total`. Treat curs
 
 ## Media and uploads
 
+Do not publish a local media reference unless its physical file exists. Preserve the stored ID for repair, return nullable preview fields, and mark missing home assets in the dashboard.
+
 Uploads belong to the authenticated user.
 
 - Upload responses expose both `id`/`uploadId` and a usable URL.
@@ -202,11 +205,12 @@ Cancellation, modification, reviews creation, and payment operations require sep
 
 Use additive migrations for existing installations. Do not reimport full seeds into production.
 
-Current 17 November 2026 migration order:
+Current migration order:
 
 1. `database/migration_2026_11_17_mobile_handoff.sql`
 2. `database/migration_2026_11_17_home_banners.sql`
 3. `database/migration_2026_11_17_home_offers.sql`
+4. `database/migration_2026_11_18_verification_fixes.sql`
 
 The canonical new-install schema is `database/schema.sql` followed by `database/seed.sql`.
 
@@ -274,9 +278,9 @@ When backend changes affect the mobile contract:
 5. Require the mobile developer to distinguish mock, staging, and production evidence.
 6. Request one Markdown response listing pass/fail status and every remaining item by owner and priority.
 
-The current requested response filename is:
+The current requested re-verification response filename is:
 
-`MOBILE_BACKEND_VERIFICATION_RESPONSE.md`
+`MOBILE_BACKEND_REVERIFICATION_RESPONSE.md`
 
 The complete response template and checklist are in `BACKEND_DAILY_HANDOFF_2026_11_17.md`.
 

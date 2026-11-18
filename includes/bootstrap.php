@@ -37,6 +37,16 @@ function admin(): ?array { return $_SESSION['admin'] ?? null; }
 function require_admin(): void { if (!admin()) redirect('login.php'); }
 function new_uuid(): string { $b=random_bytes(16);$b[6]=chr((ord($b[6])&15)|64);$b[8]=chr((ord($b[8])&63)|128);return vsprintf('%s%s-%s-%s-%s-%s%s%s',str_split(bin2hex($b),4)); }
 
+function public_asset_available(?string $path): bool
+{
+    $path = trim((string)$path);
+    if ($path === '') return false;
+    $relative = ltrim(str_replace('\\', '/', $path), '/');
+    if ($relative === '' || str_contains($relative, '../')) return false;
+    if (!preg_match('#^(?:uploads|assets)/.+\.(?:jpe?g|png|webp|svg)$#i', $relative)) return false;
+    return is_file(dirname(__DIR__) . '/' . $relative);
+}
+
 function upload_image(string $field, ?string $current = null): ?string
 {
     if (empty($_FILES[$field]['name'])) return $current;

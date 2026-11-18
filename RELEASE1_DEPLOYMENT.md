@@ -28,7 +28,14 @@ Import `database/schema.sql`, then `database/seed.sql`. Initial administrator cr
 
 ## Existing installation
 
-Do not import the full seed again. Back up the database, apply `database/migration_2026_11_17_mobile_handoff.sql`, `database/migration_2026_11_17_home_banners.sql`, and `database/migration_2026_11_17_home_offers.sql` once, upload the application files, preserve your current data, and update the administrator password through a freshly generated `password_hash()` value if needed.
+Do not import the full seed again. Back up the database and apply these migrations in order:
+
+1. `database/migration_2026_11_17_mobile_handoff.sql`
+2. `database/migration_2026_11_17_home_banners.sql`
+3. `database/migration_2026_11_17_home_offers.sql`
+4. `database/migration_2026_11_18_verification_fixes.sql`
+
+Upload the application files, preserve current data, and update the administrator password through a freshly generated `password_hash()` value if needed. The final migration only completes the known synthetic travel-package fixture; it does not create commercial inventory.
 
 ## Smoke checks
 
@@ -43,6 +50,8 @@ Do not import the full seed again. Back up the database, apply `database/migrati
 9. An uploaded partner image can be previewed through its authenticated media URL.
 10. The availability dashboard populates an explicit range that appears in the driver calendar response.
 11. Upload two home slides and two home offers with different display-order values. Confirm `/v1/home` returns separate `banners` and `offers` collections with absolute image URLs in ascending order.
+12. Request every `imageUrl` returned by `/v1/home` and confirm it returns HTTP 200 with an image content type. Missing local files must be omitted from the API and marked for re-upload in the dashboard.
+13. Confirm the published demo travel-package collection and detail responses contain `destinations`, `image`, `imageUrl`, `itinerary`, `terms`, and `availability`.
 
 Before running the mobile staging matrix, approve a collaborator, review its service drafts, publish reviewed catalog records, populate explicit availability, and assign a request only to an approved collaborator. These dashboard mutations are recorded in `audit_log`.
 
