@@ -28,7 +28,7 @@ button,input,select,textarea{font-family:inherit}button,a,select,input,textarea{
 .sidebar nav a.active .ui-icon{color:#ffb05c;opacity:1}.profile{position:relative;margin-top:auto;padding:17px 6px 0;border-top-color:rgba(255,255,255,.09)}
 .profile-trigger{padding:5px 4px;border-radius:12px}.profile-trigger:hover{background:rgba(255,255,255,.06)}.profile-trigger:hover .profile-copy{text-decoration:none}
 .avatar{background:linear-gradient(145deg,#8a4aa9,#5c287c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
-main{margin-left:268px;padding:0 38px 34px;max-width:1800px}
+main{width:auto;max-width:none;margin-left:268px;padding:0 38px 34px}
 .topbar{position:sticky;top:0;z-index:4;margin:0 -10px 28px;padding:25px 10px 20px;background:rgba(247,246,250,.88);backdrop-filter:blur(16px);border-bottom:1px solid rgba(230,226,235,.7)}
 .topbar h1{margin:3px 0 0;font-size:27px;line-height:1.2;letter-spacing:-.7px}.topbar .eyebrow{letter-spacing:2px}
 .top-actions{gap:10px}.language-control select{min-height:40px;padding:9px 34px 9px 12px;border-color:#e2dde7;box-shadow:0 1px 2px rgba(28,16,39,.02)}
