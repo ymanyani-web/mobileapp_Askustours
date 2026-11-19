@@ -43,3 +43,44 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&modal&&!mod
 
 const apiLink=document.querySelector('.top-actions a[href*="api/"]');
 if(apiLink)apiLink.href='https://api.askustours.com/v1/home';
+
+const currentFile=location.pathname.split('/').pop()||'index.php';
+const currentParams=new URLSearchParams(location.search);
+document.querySelectorAll('.sidebar nav a').forEach(link=>{
+  const target=new URL(link.href,location.href);
+  const targetFile=target.pathname.split('/').pop();
+  let active=targetFile===currentFile;
+  if(active&&currentFile==='content.php')active=target.searchParams.get('type')===(currentParams.get('type')||'banners');
+  if(active&&currentFile==='catalog.php')active=target.searchParams.get('view')==='content'?currentParams.get('view')==='content':currentParams.get('view')!=='content';
+  if(active&&currentFile==='users.php')active=target.searchParams.get('view')===(currentParams.get('view')||'customers');
+  link.classList.toggle('active',active);
+  if(active)link.setAttribute('aria-current','page');
+});
+
+const sidebar=document.querySelector('.sidebar');
+const topbarHeading=document.querySelector('.topbar>div:first-child');
+if(sidebar&&topbarHeading){
+  const menuButton=document.createElement('button');
+  menuButton.type='button';
+  menuButton.className='menu-toggle';
+  menuButton.setAttribute('aria-label','Open navigation');
+  menuButton.setAttribute('aria-expanded','false');
+  menuButton.innerHTML='<span></span><span></span><span></span>';
+  topbarHeading.prepend(menuButton);
+  const scrim=document.createElement('button');
+  scrim.type='button';
+  scrim.className='mobile-nav-scrim';
+  scrim.setAttribute('aria-label','Close navigation');
+  document.body.append(scrim);
+  const setNavigation=open=>{
+    sidebar.classList.toggle('mobile-open',open);
+    scrim.classList.toggle('visible',open);
+    menuButton.setAttribute('aria-expanded',String(open));
+    document.body.classList.toggle('nav-open',open);
+  };
+  menuButton.addEventListener('click',()=>setNavigation(!sidebar.classList.contains('mobile-open')));
+  scrim.addEventListener('click',()=>setNavigation(false));
+  sidebar.querySelectorAll('nav a').forEach(link=>link.addEventListener('click',()=>setNavigation(false)));
+  addEventListener('resize',()=>{if(innerWidth>820)setNavigation(false)});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape')setNavigation(false)});
+}
