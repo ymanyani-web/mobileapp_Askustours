@@ -34,11 +34,13 @@ This file tracks work that is still pending. Do not mark an item complete withou
   - Upload the intended JPG, PNG, or WebP image and confirm display order.
   - Verify every returned `data.banners[].imageUrl` responds HTTP 200 with an image content type.
 
-- [ ] **Make uploaded media persistent across deployments** — Owner: Infrastructure
-  - Preserve the production `uploads/` directory when Git deployments replace application files.
-  - Prefer a persistent volume, deployment-excluded directory, or object storage with a documented migration plan.
-  - Back up both uploaded files and their database metadata.
-  - Perform and document a restore test so database paths cannot outlive their physical files again.
+- [ ] **Complete the persistent-media production migration** — Owner: Infrastructure
+  - The application now writes new media outside the Git checkout using `UPLOAD_STORAGE_PATH`, defaulting to the sibling `askustours-storage/uploads` directory.
+  - Confirm the production PHP process can create and write that directory.
+  - Copy any surviving legacy files from `public_html/uploads/` into the persistent directory while preserving relative paths.
+  - Re-upload the already missing banner files because code cannot recover deleted bytes.
+  - Upload a temporary image, deploy another commit, and prove the file remains reachable afterward.
+  - Back up both persistent files and their database metadata, then perform a documented restore test.
 
 - [ ] **Apply the outstanding production data migration** — Owner: Backend/Infrastructure
   - Back up the production database.

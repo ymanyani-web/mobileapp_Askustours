@@ -1,4 +1,7 @@
 Options -Indexes
+RewriteEngine On
+RewriteRule ^uploads/[^/]+/ - [F,L]
+
 <FilesMatch "^(config(?:\.local)?\.php|.*\.sql|.*\.md)$">
     Require all denied
 </FilesMatch>

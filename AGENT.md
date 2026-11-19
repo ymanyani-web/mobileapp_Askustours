@@ -147,6 +147,8 @@ Return `meta.pagination.limit`, `nextCursor`, `hasMore`, and `total`. Treat curs
 
 Do not publish a local media reference unless its physical file exists. Preserve the stored ID for repair, return nullable preview fields, and mark missing home assets in the dashboard.
 
+New runtime media must be written through `upload_storage_root()`. Its default is the sibling `askustours-storage/uploads` directory outside the Git checkout, and production can override it with `UPLOAD_STORAGE_PATH`. Never change writes back to the repository `uploads/` directory. `stored_asset_file()` retains read-only legacy fallback during migration. Public catalog images are streamed through `media.php`; private user images remain owner scoped through `/v1/uploads/{uploadId}`.
+
 Uploads belong to the authenticated user.
 
 - Upload responses expose both `id`/`uploadId` and a usable URL.

@@ -18,6 +18,8 @@ For staging-only OTP testing, set `AUTH_DEV_CODE` to a test code such as `123456
 
 Set `API_PUBLIC_BASE_URL` to the public versioned API base, for example `https://api.askustours.com/v1`. `CALENDAR_HORIZON_DAYS` defaults to 120.
 
+Set `UPLOAD_STORAGE_PATH` to an absolute writable directory outside `public_html` and outside the Git checkout. If omitted, the application uses the sibling directory `askustours-storage/uploads` next to the project directory. New dashboard and user uploads are written there. Reads retain a fallback to the legacy project `uploads/` directory so existing files can be migrated without downtime.
+
 Set `CORS_ALLOWED_ORIGINS` to the comma-separated HTTPS origins allowed to run the Flutter web client. Native Android/iOS requests normally have no browser `Origin` header. Database credentials must be supplied through environment variables or the untracked `config.local.php`; no production database password is stored in the repository. Rotate any credential that was previously committed.
 
 Do not set `APP_DEBUG=1` in production.
@@ -52,6 +54,7 @@ Upload the application files, preserve current data, and update the administrato
 11. Upload two home slides and two home offers with different display-order values. Confirm `/v1/home` returns separate `banners` and `offers` collections with absolute image URLs in ascending order.
 12. Request every `imageUrl` returned by `/v1/home` and confirm it returns HTTP 200 with an image content type. Missing local slide files must be omitted from the API and marked for re-upload in the dashboard.
 13. Confirm the published demo travel-package collection and detail responses contain `destinations`, `image`, `imageUrl`, `itinerary`, `terms`, and `availability`.
+14. Upload a temporary dashboard image and a private user image. Deploy a new commit, then confirm both files still exist, the public image returns HTTP 200 through `media.php`, and the private image still requires its owner's Bearer token.
 
 Before running the mobile staging matrix, approve a collaborator, review its service drafts, publish reviewed catalog records, populate explicit availability, and assign a request only to an approved collaborator. These dashboard mutations are recorded in `audit_log`.
 

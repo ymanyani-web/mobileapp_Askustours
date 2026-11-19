@@ -18,6 +18,8 @@ $settings=[
     'cors_allowed_origins' => array_values(array_filter(array_map('trim', explode(',', $env('CORS_ALLOWED_ORIGINS', 'https://admin.askustours.com'))))),
     //'base_url' => getenv('APP_URL') ?: 'http://localhost:8000',
     'base_url' => $env('APP_URL', 'https://admin.askustours.com'),
+    // Keep runtime uploads outside the Git deployment directory so pushes cannot remove them.
+    'upload_storage_path' => $env('UPLOAD_STORAGE_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'askustours-storage' . DIRECTORY_SEPARATOR . 'uploads'),
     'db' => [
         'host' => getenv('DB_HOST') ?: '127.0.0.1',
         'port' => getenv('DB_PORT') ?: '3306',

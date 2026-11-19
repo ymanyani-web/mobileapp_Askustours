@@ -6,6 +6,14 @@ This file records completed work and the evidence supporting its status.
 
 ## Home screen and dashboard
 
+- [x] Moved new runtime uploads out of the Git checkout in application code.
+  - The default storage root is the sibling `askustours-storage/uploads` directory.
+  - `UPLOAD_STORAGE_PATH` supports an explicit absolute server path.
+  - Public catalog media is streamed through `media.php` after a database-backed resource lookup.
+  - Private user media remains owner scoped through the authenticated API route.
+  - Reads fall back to the legacy project `uploads/` directory during migration.
+  - Production write/deploy/restore verification remains in [TODO.md](./TODO.md).
+
 - [x] Separated large home slides from featured offer cards.
   - Dashboard managers: `content.php?type=banners` and `content.php?type=offers`.
   - API collections: `data.banners` and `data.offers`.

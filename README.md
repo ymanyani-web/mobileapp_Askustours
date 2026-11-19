@@ -12,7 +12,7 @@ Native PHP/MySQL control panel for the AskUs Tours mobile application. It manage
 
 1. For a new database, import `database/schema.sql`, followed by `database/seed.sql`. For an existing installation, back up the database and apply the ordered migrations listed in `RELEASE1_DEPLOYMENT.md`.
 2. Adjust the database values in `config.php`, or set `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASS` environment variables.
-3. Ensure the web server can write to the `uploads/` directory (it is created automatically on first upload).
+3. Ensure PHP can write to the persistent upload directory. By default it is the sibling directory `askustours-storage/uploads`, outside the Git checkout. Override it with `UPLOAD_STORAGE_PATH` or `config.local.php` when needed.
 4. From this directory, run `php -S localhost:8000` for development.
 5. Open `http://localhost:8000/login.php`.
 
@@ -29,3 +29,5 @@ Large carousel images are managed from **Home slides**. The smaller **Ofertas de
 The former `create-booking.php` and `booking-status.php` routes return HTTP 410. Mobile clients must use quotes, authenticated reservation requests, and reservation history.
 
 For production, use HTTPS, change the initial administrator password, restrict CORS to the mobile app's origin, and keep secrets in environment variables.
+
+Runtime uploads are deliberately stored outside the repository so a Git deployment cannot remove them. Public catalog images are streamed through `media.php`; private user images remain available only through the authenticated API media route. Back up the persistent upload directory together with the database.

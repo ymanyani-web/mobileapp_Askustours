@@ -4,6 +4,8 @@ return [
     // Staging only. Leave empty in production until SMS/email delivery is configured.
     'auth_dev_code' => '',
     'api_public_base_url' => 'https://api.example.com/v1',
+    // Absolute writable directory outside public_html / the Git checkout.
+    'upload_storage_path' => '/home/account/domains/example.com/askustours-storage/uploads',
     // The webhook receives JSON: channel, destination, code, sender and expiresInSeconds.
     // It must return any 2xx response after the provider accepts the message.
     'otp' => [

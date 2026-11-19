@@ -37,6 +37,53 @@ function admin(): ?array { return $_SESSION['admin'] ?? null; }
 function require_admin(): void { if (!admin()) redirect('login.php'); }
 function new_uuid(): string { $b=random_bytes(16);$b[6]=chr((ord($b[6])&15)|64);$b[8]=chr((ord($b[8])&63)|128);return vsprintf('%s%s-%s-%s-%s-%s%s%s',str_split(bin2hex($b),4)); }
 
+function upload_storage_root(): string
+{
+    global $config;
+    $configured = trim((string)($config['upload_storage_path'] ?? ''));
+    return rtrim($configured !== '' ? $configured : dirname(__DIR__) . '/uploads', '/\\');
+}
+
+function legacy_upload_storage_root(): string
+{
+    return dirname(__DIR__) . '/uploads';
+}
+
+function stored_asset_file(?string $path): ?string
+{
+    $path = trim((string)$path);
+    if ($path === '') return null;
+    if (preg_match('#^https://#i', $path)) {
+        global $config;
+        $assetUrl = parse_url($path);
+        $baseUrl = parse_url((string)($config['base_url'] ?? ''));
+        if (!is_array($assetUrl) || empty($assetUrl['host']) || empty($baseUrl['host'])) return null;
+        if (strcasecmp((string)$assetUrl['host'], (string)$baseUrl['host']) !== 0) return null;
+        $path = rawurldecode((string)($assetUrl['path'] ?? ''));
+    }
+    $relative = ltrim(str_replace('\\', '/', $path), '/');
+    if ($relative === '' || str_contains($relative, '../')) return null;
+    if (!preg_match('#^(uploads|assets)/(.+\.(?:jpe?g|png|webp|svg))$#i', $relative, $match)) return null;
+    if (strtolower($match[1]) === 'assets') {
+        $candidate = dirname(__DIR__) . '/' . $relative;
+        return is_file($candidate) ? $candidate : null;
+    }
+    $suffix = str_replace('/', DIRECTORY_SEPARATOR, $match[2]);
+    foreach (array_unique([upload_storage_root(), legacy_upload_storage_root()]) as $root) {
+        $candidate = $root . DIRECTORY_SEPARATOR . $suffix;
+        if (is_file($candidate)) return $candidate;
+    }
+    return null;
+}
+
+function public_content_media_url(string $type, int $id, ?string $path): string
+{
+    $path = trim((string)$path);
+    if (preg_match('#^https://#i', $path)) return $path;
+    global $config;
+    return rtrim((string)$config['base_url'], '/') . '/media.php?type=' . rawurlencode($type) . '&id=' . $id;
+}
+
 function public_asset_available(?string $path): bool
 {
     $path = trim((string)$path);
@@ -49,10 +96,7 @@ function public_asset_available(?string $path): bool
         if (empty($baseUrl['host']) || strcasecmp((string)$assetUrl['host'], (string)$baseUrl['host']) !== 0) return true;
         $path = rawurldecode((string)($assetUrl['path'] ?? ''));
     }
-    $relative = ltrim(str_replace('\\', '/', $path), '/');
-    if ($relative === '' || str_contains($relative, '../')) return false;
-    if (!preg_match('#^(?:uploads|assets)/.+\.(?:jpe?g|png|webp|svg)$#i', $relative)) return false;
-    return is_file(dirname(__DIR__) . '/' . $relative);
+    return stored_asset_file($path) !== null;
 }
 
 function upload_image(string $field, ?string $current = null): ?string
@@ -64,8 +108,8 @@ function upload_image(string $field, ?string $current = null): ?string
     $mime = (new finfo(FILEINFO_MIME_TYPE))->file($_FILES[$field]['tmp_name']);
     $extensions = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
     if (!isset($extensions[$mime])) throw new RuntimeException('Only JPG, PNG and WebP images are allowed.');
-    $dir = dirname(__DIR__) . '/uploads';
-    if (!is_dir($dir)) mkdir($dir, 0775, true);
+    $dir = upload_storage_root();
+    if (!is_dir($dir) && !mkdir($dir, 0750, true) && !is_dir($dir)) throw new RuntimeException('Could not create persistent upload storage.');
     $name = bin2hex(random_bytes(12)) . '.' . $extensions[$mime];
     if (!move_uploaded_file($_FILES[$field]['tmp_name'], $dir . '/' . $name)) throw new RuntimeException('Could not store image.');
     return 'uploads/' . $name;
