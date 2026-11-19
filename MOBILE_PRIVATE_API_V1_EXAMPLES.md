@@ -327,4 +327,4 @@ The server returns at most the 50 most recent wallet movements in Release 1. Wal
 - Missing/different-owner upload read: HTTP 404 `NOT_FOUND`.
 - Missing physical upload file: HTTP 404 `NOT_FOUND`.
 
-Do not treat a media URL as public. Send the bearer token only to the configured AskUs Tours API origin.
+Do not treat a media URL as public. Send the bearer token only to the configured HALA SPAIN API origin.

@@ -1,10 +1,10 @@
-# AskUs Tours Mobile App — Release 1 Backend Integration Brief
+# HALA SPAIN Mobile App — Release 1 Backend Integration Brief
 
 Give this complete file to the Codex agent working in the mobile-app repository.
 
 ## Assignment for Codex
 
-Connect the existing AskUs Tours mobile application to the operational Release 1 backend described below. Preserve the current UI, navigation, localization (English, Spanish, and Arabic), RTL behavior, validation, and offline-friendly states. Replace local/mock repositories only for the features supported by this contract. Do not invent endpoints, send card details, add hotel booking, or treat a reservation request as a paid/confirmed booking.
+Connect the existing HALA SPAIN mobile application to the operational Release 1 backend described below. Preserve the current UI, navigation, localization (English, Spanish, and Arabic), RTL behavior, validation, and offline-friendly states. Replace local/mock repositories only for the features supported by this contract. Do not invent endpoints, send card details, add hotel booking, or treat a reservation request as a paid/confirmed booking.
 
 First inspect the mobile code and tests. Identify its networking, state-management, model serialization, secure-storage, and environment/configuration conventions. Then implement the API client, DTO/domain mappings, authenticated session lifecycle, repositories, UI loading/empty/error states, and tests. Make focused changes and keep existing local behavior as a fallback only where this document explicitly permits it.
 

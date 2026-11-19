@@ -1,6 +1,6 @@
-# AskUs Tours Admin Dashboard
+# HALA SPAIN Admin Dashboard
 
-Native PHP/MySQL control panel for the AskUs Tours mobile application. It manages home slides, featured offer cards, categories, services, destinations, hotels, chauffeured vehicles, customers and bookings.
+Native PHP/MySQL control panel for the HALA SPAIN mobile application. It manages home slides, featured offer cards, categories, services, destinations, hotels, chauffeured vehicles, customers and bookings.
 
 ## Requirements
 

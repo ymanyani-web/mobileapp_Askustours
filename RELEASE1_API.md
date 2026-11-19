@@ -1,4 +1,4 @@
-# AskUs Tours API — Release 1
+# HALA SPAIN API — Release 1
 
 Base URL: `https://api.askustours.com/v1`
 

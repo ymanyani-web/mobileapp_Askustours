@@ -1,8 +1,8 @@
-# AskUs Tours backend and dashboard agent guide
+# HALA SPAIN backend and dashboard agent guide
 
 ## Purpose
 
-This repository contains the PHP/MySQL backend API and administrator dashboard used by the AskUs Tours mobile application.
+This repository contains the PHP/MySQL backend API and administrator dashboard used by the HALA SPAIN mobile application.
 
 Future coding agents must preserve the API contract shared with the mobile project, keep dashboard operations auditable, avoid exposing credentials, and clearly distinguish completed code from production configuration or operational work.
 
