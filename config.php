@@ -12,6 +12,11 @@ $settings=[
         'sender' => $env('AUTH_OTP_SENDER', 'ASKUSTOURS'),
         'timeout_seconds' => (int)$env('AUTH_OTP_TIMEOUT_SECONDS', '8'),
     ],
+    'firebase' => [
+        'project_id' => $env('FIREBASE_PROJECT_ID', ''),
+        'web_api_key' => $env('FIREBASE_WEB_API_KEY', ''),
+        'timeout_seconds' => (int)$env('FIREBASE_TIMEOUT_SECONDS', '8'),
+    ],
     'calendar' => [
         'horizon_days' => (int)$env('CALENDAR_HORIZON_DAYS', '120'),
     ],

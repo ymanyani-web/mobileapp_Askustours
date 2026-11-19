@@ -1,5 +1,13 @@
 # HALA SPAIN — TODO
 
+## Firebase Authentication activation
+
+- Create the HALA SPAIN Firebase project and enable Phone and Google sign-in.
+- Register the Android and iOS applications, including Android SHA fingerprints and iOS APNs configuration.
+- Run `database/migration_2026_11_19_firebase_auth.sql` in production.
+- Configure `FIREBASE_PROJECT_ID` and `FIREBASE_WEB_API_KEY` on the backend server.
+- Ask the mobile developer to implement `FIREBASE_AUTH_MOBILE_HANDOFF_2026_11_19.md` and test account linking, logout, token refresh, suspended collaborators and cross-account isolation on real Android and iPhone devices.
+
 Last updated: 19 November 2026
 
 This file tracks work that is still pending. Do not mark an item complete without evidence from the appropriate environment.

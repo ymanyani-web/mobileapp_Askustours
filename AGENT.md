@@ -114,6 +114,10 @@ Legacy `catalog.php?view=banners` and `catalog.php?view=offers` requests redirec
 
 ## Authentication and OTP
 
+Mobile customers and collaborators are migrating to Firebase Authentication through `POST /auth/firebase-session`. Firebase proves the phone or Google identity; the backend maps its stable Firebase UID to one HALA SPAIN user and issues the existing API access/refresh session so owner-scoped routes remain compatible. Never trust an email from Firebase unless Firebase marks it verified. Never accept a client-supplied Firebase UID without validating the ID token through the configured Firebase project.
+
+Keep administrator dashboard authentication separate. Phone and Google credentials belonging to the same person must be linked inside Firebase so both providers resolve to one Firebase UID.
+
 `POST /auth/challenges` supports a configurable authenticated webhook.
 
 Required production settings:
@@ -213,6 +217,8 @@ Current migration order:
 2. `database/migration_2026_11_17_home_banners.sql`
 3. `database/migration_2026_11_17_home_offers.sql`
 4. `database/migration_2026_11_18_verification_fixes.sql`
+5. `database/migration_2026_11_19_firebase_auth.sql`
+5. `database/migration_2026_11_19_firebase_auth.sql`
 
 The canonical new-install schema is `database/schema.sql` followed by `database/seed.sql`.
 

@@ -18,6 +18,8 @@ For staging-only OTP testing, set `AUTH_DEV_CODE` to a test code such as `123456
 
 Set `API_PUBLIC_BASE_URL` to the public versioned API base, for example `https://api.askustours.com/v1`. `CALENDAR_HORIZON_DAYS` defaults to 120.
 
+For mobile Firebase Authentication, set `FIREBASE_PROJECT_ID` and `FIREBASE_WEB_API_KEY` from the HALA SPAIN Firebase project, then run `database/migration_2026_11_19_firebase_auth.sql`. Enable Phone and Google providers in Firebase Authentication before exposing `POST /v1/auth/firebase-session`. The administrator dashboard continues to use its existing administrator login.
+
 Set `UPLOAD_STORAGE_PATH` to an absolute writable directory outside `public_html` and outside the Git checkout. If omitted, the application uses the sibling directory `askustours-storage/uploads` next to the project directory. New dashboard and user uploads are written there. Reads retain a fallback to the legacy project `uploads/` directory so existing files can be migrated without downtime.
 
 Set `CORS_ALLOWED_ORIGINS` to the comma-separated HTTPS origins allowed to run the Flutter web client. Native Android/iOS requests normally have no browser `Origin` header. Database credentials must be supplied through environment variables or the untracked `config.local.php`; no production database password is stored in the repository. Rotate any credential that was previously committed.

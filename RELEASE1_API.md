@@ -25,6 +25,7 @@ All successful responses use `{ "data": ..., "meta": { "requestId": "req_..." } 
 
 - `POST /auth/challenges`
 - `POST /auth/sessions`
+- `POST /auth/firebase-session` — exchange a verified Firebase Phone/Google identity for a HALA SPAIN API session
 - `POST /auth/session-refresh`
 - `DELETE /auth/session`
 - `GET /me`

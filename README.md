@@ -31,3 +31,5 @@ The former `create-booking.php` and `booking-status.php` routes return HTTP 410.
 For production, use HTTPS, change the initial administrator password, restrict CORS to the mobile app's origin, and keep secrets in environment variables.
 
 Runtime uploads are deliberately stored outside the repository so a Git deployment cannot remove them. Public catalog images are streamed through `media.php`; private user images remain available only through the authenticated API media route. Back up the persistent upload directory together with the database.
+
+Mobile customer and collaborator authentication supports a Firebase Phone/Google exchange at `POST /api/v1/auth/firebase-session`. Activation requires the Firebase project settings and `database/migration_2026_11_19_firebase_auth.sql`; administrator dashboard authentication remains separate.

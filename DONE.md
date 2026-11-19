@@ -1,5 +1,13 @@
 # HALA SPAIN — DONE
 
+## Firebase Authentication backend preparation — 19 November 2026
+
+- Added a Firebase Phone/Google identity exchange endpoint while preserving the existing HALA SPAIN API access and refresh-token contract.
+- Added secure account linking by verified phone/email plus a stable unique Firebase UID.
+- Added additive database migration, canonical schema fields, environment configuration and mobile handoff documentation.
+- Kept administrator dashboard login independent from mobile Firebase authentication.
+- Code is complete; Firebase Console creation, production configuration, migration execution and real-device verification remain pending.
+
 Last updated: 19 November 2026
 
 This file records completed work and the evidence supporting its status.

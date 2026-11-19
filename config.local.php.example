@@ -3,6 +3,13 @@
 return [
     // Staging only. Leave empty in production until SMS/email delivery is configured.
     'auth_dev_code' => '',
+    // Firebase Authentication for mobile customers and collaborators.
+    // The Web API key identifies the Firebase project; never commit the real server config.
+    'firebase' => [
+        'project_id' => 'hala-spain-production',
+        'web_api_key' => 'replace-with-firebase-web-api-key',
+        'timeout_seconds' => 8,
+    ],
     'api_public_base_url' => 'https://api.example.com/v1',
     // Absolute writable directory outside public_html / the Git checkout.
     'upload_storage_path' => '/home/account/domains/example.com/askustours-storage/uploads',
