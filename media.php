@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require __DIR__ . '/includes/bootstrap.php';
+require __DIR__ . '/includes/home_content.php';
 
 $resources = [
     'banners' => 'banners',
@@ -13,14 +14,22 @@ $resources = [
 ];
 $type = (string)($_GET['type'] ?? '');
 $id = filter_var($_GET['id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-if (!isset($resources[$type]) || $id === false) {
+$homeSection = str_starts_with($type, 'home_') ? substr($type,5) : '';
+if ((!isset($resources[$type]) && !isset(home_sections()[$homeSection])) || $id === false) {
     http_response_code(404);
     exit;
 }
 
-$statement = db()->prepare('SELECT image_path FROM `' . $resources[$type] . '` WHERE id=?');
-$statement->execute([(int)$id]);
-$path = $statement->fetchColumn();
+$path = null;
+if (isset(home_sections()[$homeSection])) {
+    foreach (home_configuration()[$homeSection] ?? [] as $card) {
+        if ((int)($card['_mediaId'] ?? 0) === (int)$id) {$path=home_card_image($card); break;}
+    }
+} else {
+    $statement = db()->prepare('SELECT image_path FROM `' . $resources[$type] . '` WHERE id=?');
+    $statement->execute([(int)$id]);
+    $path = $statement->fetchColumn();
+}
 $file = is_string($path) ? stored_asset_file($path) : null;
 if ($file === null) {
     http_response_code(404);

@@ -68,6 +68,8 @@ For production OTP delivery, configure `AUTH_OTP_WEBHOOK_URL`, `AUTH_OTP_WEBHOOK
 
 ## Pagination, calendars, media, and wallets
 
+Homepage editorial management is documented in `HOME_CONTENT_HANDOFF_2026_11_21.md`. The existing `tripIdeas`, `destinations`, and `experiences` arrays support localized descriptions and display order. Hidden or missing-image cards are omitted; legacy cards retain stable order. No private routes or payment behavior changed.
+
 `GET /home` keeps the two home image collections separate. `data.banners` contains the large slides above the shortcut menu. `data.offers` contains the smaller **Ofertas destacadas** cards below the menu. Both collections contain absolute `imageUrl` values and are ordered by ascending `displayOrder`, then ascending ID. The mobile client must preserve each collection's server order and must not reuse `offers` as the slide source.
 
 `GET /me/reservations`, `GET /me/partner-services`, and `GET /me/partner-jobs` support `limit` (1–100) and an opaque `cursor`. Use `meta.pagination.nextCursor` unchanged on the next call. `hasMore` and `total` describe the filtered collection.
@@ -78,7 +80,7 @@ Upload responses include both `id` and `uploadId`. Owned media can be read throu
 
 Exact version 1 request/response examples, data types, nullability rules, wallet units, status values, and binary media behavior are documented in `MOBILE_PRIVATE_API_V1_EXAMPLES.md`.
 
-Public home slides omit records whose local image file is missing. The dashboard marks those records as **Missing image** and requires an administrator to upload a replacement before the slide can return to the mobile API. Featured offers retain legacy absolute-URL compatibility and must be checked by the deployment smoke test.
+Public home slides and offers omit records whose local image file is missing. The dashboard marks those records as **Missing image** and requires an administrator to upload a replacement before the card can return to the mobile API. Featured offers retain legacy absolute-URL compatibility and must be checked by the deployment smoke test.
 
 The published synthetic travel-package fixture contains `destinations`, `image`, top-level `imageUrl`, `itinerary`, `terms`, and `availability`. It remains demo data and must not be presented as commercial inventory.
 

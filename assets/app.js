@@ -13,6 +13,7 @@ const phraseTranslations={
 Object.assign(phraseTranslations.es,{'Customers':'Clientes','Collaborators':'Colaboradores','NEW DRAFT':'NUEVO BORRADOR','Create catalog record':'Crear registro de catálogo','City':'Ciudad','Category':'Categoría','Complete JSON payload':'Contenido JSON completo','Create draft':'Crear borrador','Legal & app content':'Contenido legal y de la app','MOBILE DATA':'DATOS MÓVILES','Record':'Registro','Preview':'Vista previa','Status / content':'Estado / contenido','Updated':'Actualizado','No records yet.':'Aún no hay registros.','DIRECTORY':'DIRECTORIO','Name':'Nombre','Contact':'Contacto','Requests':'Solicitudes','Jobs / review':'Trabajos / revisión','Joined':'Fecha de alta','Verified':'Verificado','Not verified':'No verificado','OPERATIONS':'OPERACIONES','Driver and guide requests':'Solicitudes de conductor y guía','All':'Todos','Collaborator':'Colaborador','Payment':'Pago','Unassigned':'Sin asignar','No service requests found.':'No se encontraron solicitudes de servicio.','Trip enquiries':'Consultas de viaje','Collaborator service drafts':'Borradores de servicios','Owner':'Propietario','Type':'Tipo','Payload preview':'Vista previa','Itinerary':'Itinerario','Revision':'Revisión','Published':'Publicado','Paused':'Pausado','Archived':'Archivado','Review':'Revisión','Submitted':'Enviado','Suspended':'Suspendido','Requested':'Solicitado','Assigned':'Asignado','Accepted':'Aceptado','Declined':'Rechazado','Cancelled':'Cancelado','Completed':'Completado','Closed':'Cerrado','Proposal ready':'Propuesta lista'});
 Object.assign(phraseTranslations.ar,{'Customers':'العملاء','Collaborators':'المتعاونون','NEW DRAFT':'مسودة جديدة','Create catalog record':'إنشاء سجل في الكتالوج','City':'المدينة','Category':'الفئة','Complete JSON payload':'محتوى JSON الكامل','Create draft':'إنشاء مسودة','Legal & app content':'المحتوى القانوني ومحتوى التطبيق','MOBILE DATA':'بيانات التطبيق','Record':'السجل','Preview':'المعاينة','Status / content':'الحالة / المحتوى','Updated':'آخر تحديث','No records yet.':'لا توجد سجلات بعد.','DIRECTORY':'الدليل','Name':'الاسم','Contact':'الاتصال','Requests':'الطلبات','Jobs / review':'المهام / المراجعة','Joined':'تاريخ الانضمام','Verified':'موثّق','Not verified':'غير موثّق','OPERATIONS':'العمليات','Driver and guide requests':'طلبات السائقين والمرشدين','All':'الكل','Collaborator':'المتعاون','Payment':'الدفع','Unassigned':'غير معيّن','No service requests found.':'لم يتم العثور على طلبات خدمة.','Trip enquiries':'استفسارات الرحلات','Collaborator service drafts':'مسودات خدمات المتعاونين','Owner':'المالك','Type':'النوع','Payload preview':'معاينة المحتوى','Itinerary':'خط سير الرحلة','Revision':'المراجعة','Published':'منشور','Paused':'متوقف مؤقتاً','Archived':'مؤرشف','Review':'مراجعة','Submitted':'مُرسل','Suspended':'موقوف','Requested':'مطلوب','Assigned':'مُعيّن','Accepted':'مقبول','Declined':'مرفوض','Cancelled':'ملغى','Completed':'مكتمل','Closed':'مغلق','Proposal ready':'العرض جاهز'});
 
+Object.assign(phraseTranslations.es,{'Availability calendar':'Calendario de disponibilidad','control center.':'Centro de control.','Home slides':'Slides principales','Home offers':'Ofertas destacadas','Title':'Título','Subtitle':'Descripción','Optional tap link':'Enlace opcional (HTTPS)','Display order':'Orden de aparición','Slide image':'Foto del slide','Offer card image':'Foto de la oferta','Visible in mobile app':'Visible en la app','Save changes':'Guardar cambios','Create item':'Crear contenido','Add new item':'Nuevo contenido','Edit item':'Editar contenido','APP CONTENT':'CONTENIDO DE LA APP','PUBLISHED CONTENT':'CONTENIDO DE LA SECCIÓN','Toggle':'Publicar / ocultar'});
 const originalText=new WeakMap();
 Object.assign(phraseTranslations.es,{'HALA SPAIN control center.':'Centro de control de HALA SPAIN.'});
 Object.assign(phraseTranslations.ar,{'HALA SPAIN control center.':'مركز تحكم HALA SPAIN.'});
@@ -27,13 +28,13 @@ function applyLanguage(language){
   document.querySelectorAll('[data-language]').forEach(select=>select.value=lang);
   const languageNames={en:'English',es:'Español',ar:'العربية'};
   document.querySelectorAll('[data-language-name]').forEach(element=>element.textContent=languageNames[lang]);
-  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(node){return node.parentElement&&!node.parentElement.closest('[data-i18n]')&&!['SCRIPT','STYLE'].includes(node.parentElement.tagName)&&node.textContent.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(node){return node.parentElement&&!node.parentElement.closest('[data-i18n], [data-editorial-text]')&&!['SCRIPT','STYLE'].includes(node.parentElement.tagName)&&node.textContent.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});
   const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
   nodes.forEach(node=>{if(!originalText.has(node))originalText.set(node,node.textContent);const original=originalText.get(node);const clean=original.trim();const translated=lang==='en'?clean:(phraseTranslations[lang]?.[clean]||clean);node.textContent=original.replace(clean,translated)});
 }
 
 document.querySelectorAll('[data-language]').forEach(select=>select.addEventListener('change',event=>applyLanguage(event.target.value)));
-applyLanguage(localStorage.getItem('askus.admin.language')||'en');
+applyLanguage(localStorage.getItem('askus.admin.language')||'es');
 
 const modal=document.querySelector('[data-profile-modal]');
 const openProfile=document.querySelector('[data-profile-open]');
@@ -52,6 +53,7 @@ document.querySelectorAll('.sidebar nav a').forEach(link=>{
   const target=new URL(link.href,location.href);
   const targetFile=target.pathname.split('/').pop();
   let active=targetFile===currentFile;
+  if(active&&currentFile==='home-content.php')active=target.searchParams.get('section')===(currentParams.get('section')||'tripIdeas');
   if(active&&currentFile==='content.php')active=target.searchParams.get('type')===(currentParams.get('type')||'banners');
   if(active&&currentFile==='catalog.php')active=target.searchParams.get('view')==='content'?currentParams.get('view')==='content':currentParams.get('view')!=='content';
   if(active&&currentFile==='users.php')active=target.searchParams.get('view')===(currentParams.get('view')||'customers');

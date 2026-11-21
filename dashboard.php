@@ -1,5 +1,6 @@
 <?php
 require 'includes/bootstrap.php'; require_admin(); require 'includes/layout.php';
+require 'includes/home_content.php';
 $counts=[];
 $queries=[
  'customers'=>"SELECT COUNT(*) FROM users WHERE role='customer'",
@@ -16,10 +17,14 @@ page_header('Operations overview'); ?>
 <section class="hero"><div><p class="eyebrow">LIVE OPERATIONS</p><h2>HALA SPAIN<br>control center.</h2><p>Monitor customers, collaborators, service requests and itinerary enquiries.</p></div><div class="hero-orbit"><?=ui_icon('route','hero-icon')?></div></section>
 <section class="stat-grid">
 <article class="stat"><div class="stat-icon purple"><?=ui_icon('users')?></div><div><p>Customers</p><strong><?=number_format($counts['customers'])?></strong><small>Registered accounts</small></div></article>
-<article class="stat"><div class="stat-icon teal"><?=ui_icon('partners')?></div><div><p>Collaborators</p><strong><?=number_format($counts['partners'])?></strong><small><?=$counts['pendingPartners']?> awaiting review</small></div></article>
+<article class="stat"><div class="stat-icon teal"><?=ui_icon('partners')?></div><div><p>Collaborators</p><strong><?=number_format($counts['partners'])?></strong><small><?=$counts['pendingPartners']?> <span>awaiting review</span></small></div></article>
 <article class="stat"><div class="stat-icon orange"><?=ui_icon('requests')?></div><div><p>Service requests</p><strong><?=number_format($counts['reservations'])?></strong><small>Driver and guide requests</small></div></article>
-<article class="stat"><div class="stat-icon pink"><?=ui_icon('route')?></div><div><p>Trip enquiries</p><strong><?=number_format($counts['tripRequests'])?></strong><small><?=$counts['publishedServices']?> published services</small></div></article>
+<article class="stat"><div class="stat-icon pink"><?=ui_icon('route')?></div><div><p>Trip enquiries</p><strong><?=number_format($counts['tripRequests'])?></strong><small><?=$counts['publishedServices']?> <span>published services</span></small></div></article>
 </section>
+<section class="panel home-overview"><div class="panel-head"><div><p class="eyebrow">CONTENIDO Y PUBLICACIÓN</p><h3>Gestiona la portada de tu app</h3></div><a href="content.php?type=banners">Abrir editor →</a></div><p class="home-overview-copy">Organiza cada sección con sus propias fotos, textos y orden de aparición.</p><div class="home-overview-grid">
+<?php foreach(['banners'=>['Slides principales','Fotos del carrusel de bienvenida','content'],'offers'=>['Ofertas destacadas','Tarjetas debajo de los servicios','content'],'tripIdeas'=>['Crea tu viaje','Ideas para inspirar cada viaje','route'],'destinations'=>['Destinos populares','Ciudades que quieres destacar','home'],'experiences'=>['Experiencias para ti','Actividades e inspiración','catalog']] as $key=>[$label,$description,$icon]): $target=in_array($key,['banners','offers'],true)?'content.php?type='.$key:'home-content.php?section='.$key;?>
+<a class="home-overview-tile" href="<?=e($target)?>"><span class="home-overview-icon"><?=ui_icon($icon)?></span><strong><?=e($label)?></strong><small><?=e($description)?></small><span class="home-overview-action">Gestionar →</span></a>
+<?php endforeach;?></div></section>
 <section class="dashboard-grid"><article class="panel span-2"><div class="panel-head"><div><p class="eyebrow">RECENT ACTIVITY</p><h3>Latest service requests</h3></div><a href="bookings.php">Manage →</a></div><div class="table-wrap"><table><thead><tr><th>Request</th><th>Customer</th><th>Service</th><th>Status</th><th>Created</th></tr></thead><tbody><?php foreach($recentReservations as $row):?><tr><td><strong><?=e(substr($row['id'],0,12))?></strong></td><td><?=e($row['customer_name'])?></td><td><?=e(ucfirst($row['service_type']))?></td><td><span class="badge <?=e($row['status'])?>"><?=e($row['status'])?></span><small><?=e($row['payment_status'])?></small></td><td><?=e(date('M j, Y H:i',strtotime($row['created_at'])))?></td></tr><?php endforeach;?><?php if(!$recentReservations):?><tr><td colspan="5" class="empty">No service requests yet.</td></tr><?php endif;?></tbody></table></div></article>
 <article class="panel"><div class="panel-head"><div><p class="eyebrow">REVIEW QUEUE</p><h3>Collaborators</h3></div></div><div class="status-list"><?php foreach($partnerQueue as $row):?><div><span class="status-dot <?=$row['status']==='submitted'?'pending':''?>"></span><label><?=e($row['partner_name'])?><small><?=e($row['status'])?></small></label></div><?php endforeach;?><?php if(!$partnerQueue):?><p class="empty">No applications waiting.</p><?php endif;?></div><a href="people.php?view=collaborators" class="btn secondary wide">Open collaborators</a></article></section>
 <?php page_footer();
