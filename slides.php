@@ -1,6 +1,7 @@
 <?php
 require_once 'includes/bootstrap.php'; require_admin();
 require_once 'includes/layout.php'; require_once 'includes/home_content.php'; require_once 'includes/slides.php';
+require_once 'includes/deletions.php';
 $type=($_GET['type']??'banners')==='offers'?'offers':'banners';$table=$type==='offers'?'home_offers':'banners';$metadataKey=$type==='offers'?'_offerDetails':'_bannerDetails';
 $error=null;$posted=null;$editId=(int)($_GET['edit']??0);
 if ($_SERVER['REQUEST_METHOD']==='POST') {
@@ -20,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
             $details=$row?slide_details($row,$home,$metadataKey):[];
             if ($row&&!hash_equals(slide_revision($row,$details),(string)($_POST['revision']??''))) throw new RuntimeException('Otro administrador ha cambiado este slide. Recarga antes de guardar.');
             if ($action==='delete') {
+                record_managed_backup($type,(string)$id,'Eliminación desde el editor de slides');
                 db()->prepare("DELETE FROM `$table` WHERE id=?")->execute([$id]);unset($home[$metadataKey][(string)$id]);
             } elseif ($action==='toggle') {
                 if (!$row['active']&&!public_asset_available($row['image_path'])) throw new RuntimeException('Sube una imagen válida antes de publicar.');

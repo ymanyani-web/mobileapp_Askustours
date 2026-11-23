@@ -1,6 +1,7 @@
 <?php
 require 'includes/bootstrap.php';
 require_admin();
+require_once 'includes/deletions.php';
 require 'includes/layout.php';
 require 'includes/home_content.php';
 
@@ -33,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new RuntimeException('Otro administrador ha cambiado este contenido. Recarga antes de guardar.');
         }
         if ($action === 'delete') {
+            record_managed_backup('home_'.$section,$id,'Eliminación desde el editor de portada');
             array_splice($cards,$index,1);
         } elseif ($action === 'toggle') {
             if (($existing['_active'] ?? true) === false && !public_asset_available(home_card_image($existing))) throw new RuntimeException('Sube una imagen válida antes de publicar.');

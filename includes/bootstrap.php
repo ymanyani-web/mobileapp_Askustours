@@ -32,9 +32,27 @@ function verify_csrf(): void {
     if (!hash_equals($_SESSION['csrf'] ?? '', $_POST['_csrf'] ?? '')) {
         http_response_code(419); exit('Invalid CSRF token');
     }
+    if (admin() && in_array((string)($_POST['action'] ?? ''), ['delete','restore'], true)) require_owner();
 }
 function admin(): ?array { return $_SESSION['admin'] ?? null; }
-function require_admin(): void { if (!admin()) redirect('login.php'); }
+function require_admin(): void {
+    if (!admin()) redirect('login.php');
+    $s=db()->prepare('SELECT id,name,email,role,active,password_hash FROM admins WHERE id=?');$s->execute([admin()['id']]);$current=$s->fetch();
+    if(!$current || !$current['active']) {unset($_SESSION['admin']);redirect('login.php');}
+    $stamp=hash('sha256',(string)$current['password_hash']);
+    if(isset($_SESSION['admin']['credentialStamp'])&&!hash_equals($_SESSION['admin']['credentialStamp'],$stamp)){unset($_SESSION['admin']);redirect('login.php');}
+    unset($current['active'],$current['password_hash']);$current['credentialStamp']=$stamp;$_SESSION['admin']=$current;
+    if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET' && ($_SERVER['REQUEST_METHOD']??'GET')!=='HEAD' && $current['role']==='reviewer') {
+        http_response_code(403);exit('Tu rol permite consultar, pero no modificar datos.');
+    }
+}
+function require_owner(): void {
+    if((admin()['role']??'')!=='admin'){http_response_code(403);exit('Solo el administrador puede realizar esta acción.');}
+}
+function lock_owner(): void {
+    $s=db()->prepare('SELECT role,active FROM admins WHERE id=? FOR UPDATE');$s->execute([admin()['id']]);$actor=$s->fetch();
+    if(!$actor || !$actor['active'] || $actor['role']!=='admin')throw new RuntimeException('Tu acceso de administrador ha cambiado. Vuelve a iniciar sesión.');
+}
 function new_uuid(): string { $b=random_bytes(16);$b[6]=chr((ord($b[6])&15)|64);$b[8]=chr((ord($b[8])&63)|128);return vsprintf('%s%s-%s-%s-%s-%s%s%s',str_split(bin2hex($b),4)); }
 
 function upload_storage_root(): string

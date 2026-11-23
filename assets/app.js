@@ -88,3 +88,11 @@ if(sidebar&&topbarHeading){
   addEventListener('resize',()=>{if(innerWidth>820)setNavigation(false)});
   document.addEventListener('keydown',event=>{if(event.key==='Escape')setNavigation(false)});
 }
+
+// Cosmetic controls mirror server-side role enforcement.
+if(document.body.dataset.adminRole === 'reviewer') {
+  document.querySelectorAll('form[method="post"] button, form[method="post"] input, form[method="post"] select, form[method="post"] textarea').forEach(element => element.disabled = true);
+}
+if(document.body.dataset.adminRole !== 'admin') {
+  document.querySelectorAll('button[name="action"][value="delete"],button[name="action"][value="restore"]').forEach(element => element.hidden = true);
+}
