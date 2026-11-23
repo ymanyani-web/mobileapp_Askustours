@@ -84,7 +84,7 @@ for(const section of ['destinations','experiences']) {
 for(const card of [first,second])check((await post('tripIdeas',{...await form('tripIdeas',card.id),action:'delete'})).status,302);
 for(const item of legacyIds) {
  const html=await page('/content.php?type='+item.type+'&edit='+item.id.replace(/^[a-z]+_/,''));
- check((await request('/content.php?type='+item.type,{method:'POST',body:new URLSearchParams({_csrf:field(html,'_csrf'),revision:item.type==='banners'?field(html,'revision'):'',id:item.id.replace(/^[a-z]+_/,''),action:'delete'})})).status,302);
+ check((await request('/content.php?type='+item.type,{method:'POST',body:new URLSearchParams({_csrf:field(html,'_csrf'),revision:field(html,'revision'),id:item.id.replace(/^[a-z]+_/,''),action:'delete'})})).status,302);
 }
 const after=await home();
 for(const key of ['banners','offers','shortcuts','planningFee','tripIdeas'])check(after[key],before[key]);
@@ -112,4 +112,21 @@ const repeatPage=await page('/content.php?type=banners');
 check((await request('/content.php?type=banners',{method:'POST',body:new URLSearchParams({_csrf:field(repeatPage,'_csrf'),action:'restore'})})).status,302);
 check((await home()).banners.length,5);
 check((await home()).banners[0].title.es,'Título editado');
+const publishingPage=await page('/home-publishing.php');
+check((await request('/home-publishing.php',{method:'POST',body:new URLSearchParams({_csrf:field(publishingPage,'_csrf'),action:'restore'})})).status,302);
+const rails=await home();
+check(rails.offers.length,5);
+check(rails.offers[0].opensDrivers,true);
+check(rails.offers[0].sections.length,5);
+check(rails.tripIdeas.length,6);
+check(rails.destinations.length,4);
+check(rails.experiences.length,4);
+for(const card of [...rails.tripIdeas,...rails.destinations,...rails.experiences])check((await fetch(card.imageUrl,{method:'HEAD'})).status,200);
+const settings=await page('/home-publishing.php');
+check((await request('/home-publishing.php',{method:'POST',body:new URLSearchParams({_csrf:field(settings,'_csrf'),action:'save',mode:'mixed'})})).status,302);
+const mixed=await home();
+check(mixed.offers.length,5); // Synthetic demo catalog is never promoted.
+check('_homePublishing' in mixed,false);
+check('_offerDetails' in mixed,false);
+check(mixed.planningFee,before.planningFee);
 console.log(`Isolated homepage HTTP checks passed: ${assertions} assertions.`);

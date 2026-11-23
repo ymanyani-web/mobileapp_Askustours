@@ -81,7 +81,9 @@ function public_content_media_url(string $type, int $id, ?string $path): string
     $path = trim((string)$path);
     if (preg_match('#^https://#i', $path)) return $path;
     global $config;
-    return rtrim((string)$config['base_url'], '/') . '/media.php?type=' . rawurlencode($type) . '&id=' . $id;
+    // Upload filenames are immutable. Changing a photo changes its URL/cache
+    // key, while unchanged images stay cached across automatic app refreshes.
+    return rtrim((string)$config['base_url'], '/') . '/media.php?type=' . rawurlencode($type) . '&id=' . $id . '&v=' . substr(hash('sha256',$path),0,16);
 }
 
 function public_asset_available(?string $path): bool

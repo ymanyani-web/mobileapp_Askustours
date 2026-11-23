@@ -1,5 +1,5 @@
 <?php
-if (($_GET['type'] ?? 'banners') === 'banners') { require __DIR__.'/slides.php'; exit; }
+if (in_array($_GET['type'] ?? 'banners',['banners','offers'],true)) { require __DIR__.'/slides.php'; exit; }
 require 'includes/bootstrap.php'; require_admin(); require 'includes/layout.php';
 require 'includes/home_content.php';
 $resources = [

@@ -2,8 +2,9 @@
 require __DIR__.'/bootstrap.php';
 require dirname(__DIR__).'/includes/home_content.php';
 require dirname(__DIR__).'/includes/slides.php';
+require dirname(__DIR__).'/includes/home_publishing.php';
 $method=$_SERVER['REQUEST_METHOD']; $path=trim((string)($_GET['route']??''),'/');
-if($method==='GET'&&$path==='home'){$j=db()->query('SELECT config_json FROM home_config WHERE id=1')->fetchColumn();$home=$j?decoded($j):['shortcuts'=>[],'tripIdeas'=>[],'destinations'=>[],'experiences'=>[],'planningFee'=>['amountMinor'=>2000,'currency'=>'EUR']];foreach(home_sections() as $section=>$label)$home[$section]=home_public_cards($section,$home[$section]??[]);unset($home['_bannerDetails']);$home['banners']=home_banner_slides();$home['offers']=home_featured_offers();out($home);}
+if($method==='GET'&&$path==='home'){$j=db()->query('SELECT config_json FROM home_config WHERE id=1')->fetchColumn();$home=$j?decoded($j):['shortcuts'=>[],'tripIdeas'=>[],'destinations'=>[],'experiences'=>[],'planningFee'=>['amountMinor'=>2000,'currency'=>'EUR']];foreach(home_sections() as $section=>$label)$home[$section]=home_public_cards($section,$home[$section]??[]);$home['banners']=home_banner_slides();$home['offers']=home_featured_offers();$home=home_mix($home);unset($home['_bannerDetails'],$home['_offerDetails'],$home['_homePublishing']);out($home);}
 if($method==='GET'&&$path==='metadata/catalog')out(['schemaVersion'=>1,'cities'=>['madrid','barcelona','malaga'],'driverCategories'=>['executive','van','standard'],'languages'=>['es','en','ar'],'currencies'=>['EUR']]);
 if($method==='GET'&&preg_match('#^content/([a-z0-9-]+)$#',$path,$m)){$s=db()->prepare('SELECT slug,version,title_json,body_json FROM content_documents WHERE slug=? AND active=1');$s->execute([$m[1]]);$r=$s->fetch();if(!$r)fail(404,'NOT_FOUND','The requested resource was not found.');out(['slug'=>$r['slug'],'version'=>$r['version'],'title'=>decoded($r['title_json']),'body'=>decoded($r['body_json'])]);}
 $catalogs=['driver-services'=>['driver_services','service_json'],'guide-services'=>['guide_services','service_json'],'travel-packages'=>['travel_packages','package_json']];

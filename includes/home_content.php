@@ -86,5 +86,5 @@ function home_content_navigation(string $selected): void
         $url = in_array($key,['banners','offers'],true) ? 'content.php?type='.$key : 'home-content.php?section='.$key;
         echo '<a '.($key === $selected ? 'aria-current="page" class="selected" ' : '').'href="'.e($url).'">'.e($label).'</a>';
     }
-    echo '</nav>';
+    echo '<a href="home-publishing.php" '.($selected==='publishing'?'class="selected" aria-current="page"':'').'>Publicación mixta</a></nav>';
 }

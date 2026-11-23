@@ -1,0 +1,236 @@
+{
+  "tripIdeas": [
+    {
+      "key": "nature",
+      "image": "granada.jpg",
+      "title": {
+        "es": "Naturaleza",
+        "en": "Nature",
+        "ar": "الطبيعة"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "designTrip",
+      "prefillStyle": "nature"
+    },
+    {
+      "key": "honeymoon",
+      "image": "costa.jpg",
+      "title": {
+        "es": "Luna de miel",
+        "en": "Honeymoon",
+        "ar": "شهر العسل"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "designTrip",
+      "prefillStyle": "honeymoon"
+    },
+    {
+      "key": "familyTrip",
+      "image": "sevilla.jpg",
+      "title": {
+        "es": "Viaje familiar",
+        "en": "Family trip",
+        "ar": "رحلة عائلية"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "designTrip",
+      "prefillStyle": "family"
+    },
+    {
+      "key": "friendsTrip",
+      "image": "tapas.jpg",
+      "title": {
+        "es": "Viaje con amigos",
+        "en": "Trip with friends",
+        "ar": "رحلة مع الأصدقاء"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "designTrip",
+      "prefillStyle": "friends"
+    },
+    {
+      "key": "shoppingTrip",
+      "image": "madrid.jpg",
+      "title": {
+        "es": "Viaje de compras",
+        "en": "Shopping trip",
+        "ar": "رحلة تسوق"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "designTrip",
+      "prefillStyle": "shopping"
+    },
+    {
+      "key": "sportsTrip",
+      "image": "kayak.jpg",
+      "title": {
+        "es": "Viaje deportivo",
+        "en": "Sports trip",
+        "ar": "رحلة رياضية"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "designTrip",
+      "prefillStyle": "sports"
+    }
+  ],
+  "destinations": [
+    {
+      "key": "madrid",
+      "image": "madrid.jpg",
+      "title": {
+        "es": "Madrid",
+        "en": "Madrid",
+        "ar": "مدريد"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "placeholder",
+      "prefillStyle": null,
+      "_cityCode": "madrid"
+    },
+    {
+      "key": "barcelona",
+      "image": "barcelona.jpg",
+      "title": {
+        "es": "Barcelona",
+        "en": "Barcelona",
+        "ar": "برشلونة"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "placeholder",
+      "prefillStyle": null,
+      "_cityCode": "barcelona"
+    },
+    {
+      "key": "malaga",
+      "image": "malaga.jpg",
+      "title": {
+        "es": "Málaga",
+        "en": "Málaga",
+        "ar": "مالقة"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "placeholder",
+      "prefillStyle": null,
+      "_cityCode": "malaga"
+    },
+    {
+      "key": "granada",
+      "image": "granada.jpg",
+      "title": {
+        "es": "Granada",
+        "en": "Granada",
+        "ar": "غرناطة"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "placeholder",
+      "prefillStyle": null,
+      "_cityCode": "granada"
+    }
+  ],
+  "experiences": [
+    {
+      "key": "kayak",
+      "image": "kayak.jpg",
+      "title": {
+        "es": "Kayak en la costa",
+        "en": "Coastal kayaking",
+        "ar": "التجديف على الساحل"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "placeholder",
+      "prefillStyle": null
+    },
+    {
+      "key": "tapas",
+      "image": "tapas.jpg",
+      "title": {
+        "es": "Ruta de tapas",
+        "en": "Tapas tour",
+        "ar": "جولة التاباس"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "placeholder",
+      "prefillStyle": null
+    },
+    {
+      "key": "oldTown",
+      "image": "granada.jpg",
+      "title": {
+        "es": "Paseo por el Albaicín",
+        "en": "Albaicín walk",
+        "ar": "جولة في البيازين"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "placeholder",
+      "prefillStyle": null
+    },
+    {
+      "key": "sevilleWalk",
+      "image": "sevilla.jpg",
+      "title": {
+        "es": "Paseo por Sevilla",
+        "en": "Seville walk",
+        "ar": "جولة في إشبيلية"
+      },
+      "description": {
+        "es": "",
+        "en": "",
+        "ar": ""
+      },
+      "action": "placeholder",
+      "prefillStyle": null
+    }
+  ]
+}
