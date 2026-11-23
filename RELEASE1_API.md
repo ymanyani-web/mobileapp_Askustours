@@ -146,3 +146,6 @@ home-publishing.php permite elegir manual/mixto y recuperar las otras filas orig
 Mixto añade hasta 4 servicios a ofertas y hasta 4 guías a experiencias, ordenados por reservas aceptadas/completadas de los últimos 90 días. Destinos usa esas reservas y mantiene orden editorial en empates. Se excluyen demos, ocultos, sin fotos y sin reservas. Crea tu viaje permanece editorial. Búsquedas/compras no son señales implementadas. No se exponen datos de clientes ni contadores privados. Sin migración de esquema. Configuración privada _homePublishing/_offerDetails omitida en /home.
 
 Validación: 159 aserciones HTTP aisladas, pruebas del ranking, 13 pruebas Flutter de inicio/navegación/refresco y 6 pruebas del proxy.
+
+## Administrative account restrictions
+Blocked/inactive accounts cannot obtain or refresh backend sessions or use private routes (ACCOUNT_RESTRICTED, HTTP 403; revoked sessions remain 401). Existing public_user fields are unchanged. Collaborator approval is separate from account access. assigned jobs may be accepted/declined with the existing version/policy checks. Wallets remain read-only. See ADMIN_OPERATIONS_2026_11_23.md.

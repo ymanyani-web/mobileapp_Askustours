@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__).'/includes/bootstrap.php';
+require_once dirname(__DIR__).'/includes/account_controls.php';
+function ensure_active_account(string $uid):void{if(!account_enabled($uid))fail(403,'ACCOUNT_RESTRICTED','This account is restricted. Contact support.');}
 header('Content-Type: application/json; charset=utf-8');
 $origin=trim((string)($_SERVER['HTTP_ORIGIN']??''));$allowedOrigins=$config['cors_allowed_origins']??[];if($origin!==''&&in_array($origin,$allowedOrigins,true)){header('Access-Control-Allow-Origin: '.$origin);header('Vary: Origin');}
 header('Access-Control-Allow-Headers: Authorization, Content-Type, Accept, Idempotency-Key');
@@ -14,7 +16,7 @@ function fail(int $status,string $code,string $message,array $fields=[]):never{h
 function decoded(?string $json):mixed{return json_decode($json?:'{}',true)?:[];}
 function encoded(mixed $value):string{return json_encode($value,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);}
 function token():?string{$h=$_SERVER['HTTP_AUTHORIZATION']??'';return preg_match('/^Bearer\s+(.+)$/i',$h,$m)?$m[1]:null;}
-function user(bool $required=true):?array{$t=token();if(!$t){if($required)fail(401,'UNAUTHENTICATED','A verified session is required.');return null;}$s=db()->prepare('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.access_token_hash=? AND s.revoked_at IS NULL AND s.access_expires_at>NOW()');$s->execute([hash('sha256',$t)]);$u=$s->fetch();if(!$u)fail(401,'UNAUTHENTICATED','The session is invalid or expired.');return $u;}
+function user(bool $required=true):?array{$t=token();if(!$t){if($required)fail(401,'UNAUTHENTICATED','A verified session is required.');return null;}$s=db()->prepare('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.access_token_hash=? AND s.revoked_at IS NULL AND s.access_expires_at>NOW()');$s->execute([hash('sha256',$t)]);$u=$s->fetch();if(!$u)fail(401,'UNAUTHENTICATED','The session is invalid or expired.');ensure_active_account((string)$u['id']);return $u;}
 function verified_user():array{$u=user();if(empty($u['verified_at']))fail(403,'VERIFICATION_REQUIRED','A verified account is required.');return $u;}
 function require_partner(array $u,bool $approved=false):array{if($u['role']!=='partner'&&!(bool)$u['partner_intent'])fail(403,'PARTNER_REQUIRED','A collaborator account is required.');if($approved){if(empty($u['verified_at']))fail(403,'VERIFICATION_REQUIRED','A verified account is required.');$s=db()->prepare("SELECT status,profile_json FROM partner_profiles WHERE user_id=?");$s->execute([$u['id']]);$p=$s->fetch();if(!$p||$p['status']!=='approved')fail(403,'PARTNER_NOT_APPROVED','An approved collaborator profile is required.');$profile=decoded($p['profile_json']);if(empty($profile['professionalPhotoUploadId']))fail(403,'PROFESSIONAL_PHOTO_REQUIRED','An approved professional photo is required.');}return $u;}
 function require_fields(array $body,array $fields):void{$errors=[];foreach($fields as $f)if(!array_key_exists($f,$body)||$body[$f]===''||$body[$f]===null)$errors[$f]=['Required.'];if($errors)fail(422,'VALIDATION_ERROR','Please review the supplied values.',$errors);}

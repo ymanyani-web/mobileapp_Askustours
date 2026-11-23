@@ -32,6 +32,7 @@ if($user){
 $provider=implode(',',array_slice($identity['providers'],0,4));
 db()->beginTransaction();
 if($user){
+ $lock=db()->prepare('SELECT id FROM users WHERE id=? FOR UPDATE');$lock->execute([$user['id']]);ensure_active_account((string)$user['id']);
  db()->prepare('UPDATE users SET firebase_uid=?,firebase_provider=?,email=COALESCE(email,?),phone=COALESCE(phone,?),verified_at=COALESCE(verified_at,NOW()) WHERE id=?')->execute([$identity['uid'],$provider?:null,$identity['email'],$identity['phone'],$user['id']]);
  $userId=(string)$user['id'];
 }else{

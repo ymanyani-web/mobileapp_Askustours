@@ -1,10 +1,16 @@
 <?php
 require 'includes/bootstrap.php'; require_admin(); require 'includes/layout.php';
+require 'includes/account_controls.php';
 $view=$_GET['view']??'drivers';
 if(in_array($view,['banners','offers'],true))redirect('content.php?type='.$view);
 if(!in_array($view,['drivers','guides','packages','content'],true))$view='drivers';
 $map=['drivers'=>['driver_services','service_json'],'guides'=>['guide_services','service_json'],'packages'=>['travel_packages','package_json']];
 function publication_error(string $view,array $payload,array $row=[]):?string{
+ if(in_array($view,['drivers','guides'],true)&&!empty($row['owner_user_id'])){
+  if(!account_enabled((string)$row['owner_user_id']))return 'La cuenta del colaborador está restringida.';
+  $s=db()->prepare("SELECT status FROM partner_profiles WHERE user_id=?");$s->execute([$row['owner_user_id']]);
+  if($s->fetchColumn()!=='approved')return 'Aprueba el registro profesional antes de publicar sus servicios.';
+ }
  if(($payload['demo']??false)===true)return 'Demo records cannot be published as commercial inventory.';
  if(!is_array($payload['title']??null)||trim((string)($payload['title']['es']??''))==='')return 'A Spanish title is required before publication.';
  if($view==='drivers'){

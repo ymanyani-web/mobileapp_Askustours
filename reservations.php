@@ -1,11 +1,12 @@
 <?php
 require 'includes/bootstrap.php'; require_admin(); require 'includes/layout.php';
+require 'includes/account_controls.php';
 $allowed=['requested','assigned','accepted','declined','cancelled','completed'];
 if($_SERVER['REQUEST_METHOD']==='POST'){
  verify_csrf(); $id=(string)($_POST['id']??''); $status=(string)($_POST['status']??''); $partnerId=trim((string)($_POST['partner_user_id']??''));
  if($id!==''&&($_POST['action']??'status')==='assign'){
   db()->beginTransaction();if($partnerId===''){$stmt=db()->prepare("UPDATE reservations SET partner_user_id=NULL,status=IF(status='assigned','requested',status),version=version+1 WHERE id=?");$stmt->execute([$id]);}
-  else{$check=db()->prepare("SELECT u.id FROM users u JOIN partner_profiles p ON p.user_id=u.id WHERE u.id=? AND p.status='approved'");$check->execute([$partnerId]);if(!$check->fetchColumn())throw new RuntimeException('Only approved collaborators can be assigned.');$stmt=db()->prepare("UPDATE reservations SET partner_user_id=?,status=IF(status='requested','assigned',status),version=version+1 WHERE id=?");$stmt->execute([$partnerId,$id]);}db()->prepare("INSERT INTO audit_log(admin_id,action,entity_type,entity_id,details_json) VALUES(?,'reservation.assignment_changed','reservation',?,?)")->execute([admin()['id'],$id,json_encode(['partnerUserId'=>$partnerId?:null])]);db()->commit();
+  else{$check=db()->prepare("SELECT u.id FROM users u JOIN partner_profiles p ON p.user_id=u.id WHERE u.id=? AND p.status='approved'");$check->execute([$partnerId]);if(!$check->fetchColumn()||!account_enabled($partnerId))throw new RuntimeException('Only approved collaborators can be assigned.');$stmt=db()->prepare("UPDATE reservations SET partner_user_id=?,status=IF(status='requested','assigned',status),version=version+1 WHERE id=?");$stmt->execute([$partnerId,$id]);}db()->prepare("INSERT INTO audit_log(admin_id,action,entity_type,entity_id,details_json) VALUES(?,'reservation.assignment_changed','reservation',?,?)")->execute([admin()['id'],$id,json_encode(['partnerUserId'=>$partnerId?:null])]);db()->commit();
   flash('success','Collaborator assignment updated.');
  } elseif($id!==''&&in_array($status,$allowed,true)){
   db()->beginTransaction();$stmt=db()->prepare('UPDATE reservations SET status=?,version=version+1 WHERE id=?'); $stmt->execute([$status,$id]);db()->prepare("INSERT INTO audit_log(admin_id,action,entity_type,entity_id,details_json) VALUES(?,'reservation.status_changed','reservation',?,?)")->execute([admin()['id'],$id,json_encode(['status'=>$status])]);db()->commit();flash('success','Service request status updated.');
@@ -13,7 +14,9 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
  redirect('reservations.php');
 }
 $status=$_GET['status']??'';$params=[];$where='';
-if(in_array($status,$allowed,true)){$where='WHERE r.status=?';$params[]=$status;}
+if($status==='pending'){$where="WHERE r.status IN ('requested','assigned')";}
+elseif(in_array($status,$allowed,true)){$where='WHERE r.status=?';$params[]=$status;}
+if(!empty($_GET['id'])){$where.=($where===''?'WHERE ':' AND ').'r.id=?';$params[]=(string)$_GET['id'];}
 $stmt=db()->prepare("SELECT r.*,CONCAT(c.first_name,' ',c.last_name) customer_name,c.email customer_email,c.phone customer_phone,CONCAT(p.first_name,' ',p.last_name) partner_name FROM reservations r JOIN users c ON c.id=r.customer_user_id LEFT JOIN users p ON p.id=r.partner_user_id $where ORDER BY r.created_at DESC");$stmt->execute($params);$rows=$stmt->fetchAll();
 $partners=db()->query("SELECT u.id,CONCAT(u.first_name,' ',u.last_name) name FROM users u JOIN partner_profiles p ON p.user_id=u.id WHERE p.status='approved' ORDER BY u.first_name,u.last_name")->fetchAll();
 page_header('Service requests'); ?>

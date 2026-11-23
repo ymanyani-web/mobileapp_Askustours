@@ -1,6 +1,9 @@
 <?php
 require 'includes/bootstrap.php'; require_admin(); require 'includes/layout.php';
 require 'includes/home_content.php';
+require 'includes/account_controls.php';
+$operations=array_fill_keys(array_keys(reservation_labels()),0);
+foreach(db()->query('SELECT status,COUNT(*) total FROM reservations GROUP BY status')->fetchAll() as $row)$operations[$row['status']]=(int)$row['total'];
 $counts=[];
 $queries=[
  'customers'=>"SELECT COUNT(*) FROM users WHERE role='customer'",
@@ -21,6 +24,8 @@ page_header('Operations overview'); ?>
 <article class="stat"><div class="stat-icon orange"><?=ui_icon('requests')?></div><div><p>Service requests</p><strong><?=number_format($counts['reservations'])?></strong><small>Driver and guide requests</small></div></article>
 <article class="stat"><div class="stat-icon pink"><?=ui_icon('route')?></div><div><p>Trip enquiries</p><strong><?=number_format($counts['tripRequests'])?></strong><small><?=$counts['publishedServices']?> <span>published services</span></small></div></article>
 </section>
+<section class="panel operations-summary"><div class="panel-head"><div><p class="eyebrow">RESERVAS Y SERVICIOS</p><h3>Estado de la actividad</h3></div><a href="reservations.php">Ver todos los servicios →</a></div><div class="operation-counters">
+<?php foreach(['all'=>['Total de solicitudes',array_sum($operations)],'pending'=>['Pendientes',$operations['requested']+$operations['assigned']],'accepted'=>['Confirmados',$operations['accepted']],'completed'=>['Realizados',$operations['completed']],'cancelled'=>['Cancelados',$operations['cancelled']],'declined'=>['Rechazados',$operations['declined']]] as $key=>[$label,$count]):?><a href="reservations.php<?=$key==='all'?'':'?status='.e($key)?>" class="operation-counter <?=e($key)?>"><span><?=e($label)?></span><strong><?=$count?></strong></a><?php endforeach;?></div><p class="muted">Pendientes incluye solicitudes enviadas y asignadas. Confirmados son los aceptados por el colaborador; realizado y pagado son estados diferentes.</p></section>
 <section class="panel home-overview"><div class="panel-head"><div><p class="eyebrow">CONTENIDO Y PUBLICACIÓN</p><h3>Gestiona la portada de tu app</h3></div><a href="content.php?type=banners">Abrir editor →</a></div><p class="home-overview-copy">Organiza cada sección con sus propias fotos, textos y orden de aparición.</p><div class="home-overview-grid">
 <?php foreach(['banners'=>['Slides principales','Fotos del carrusel de bienvenida','content'],'offers'=>['Ofertas destacadas','Tarjetas debajo de los servicios','content'],'tripIdeas'=>['Crea tu viaje','Ideas para inspirar cada viaje','route'],'destinations'=>['Destinos populares','Ciudades que quieres destacar','home'],'experiences'=>['Experiencias para ti','Actividades e inspiración','catalog']] as $key=>[$label,$description,$icon]): $target=in_array($key,['banners','offers'],true)?'content.php?type='.$key:'home-content.php?section='.$key;?>
 <a class="home-overview-tile" href="<?=e($target)?>"><span class="home-overview-icon"><?=ui_icon($icon)?></span><strong><?=e($label)?></strong><small><?=e($description)?></small><span class="home-overview-action">Gestionar →</span></a>
