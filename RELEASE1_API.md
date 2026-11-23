@@ -134,3 +134,15 @@ The slide editor is handled by slides.php (content.php?type=banners remains comp
 GET /home banners retains subtitle/linkUrl and adds description, highlights, sectionHeading, sections, destination and opensDrivers. An internal destination opens a button in the existing mobile detail page; drivers preserves the original Reserva ahora behavior. Unknown destinations are ignored by mobile. All banner metadata is stored under home_config._bannerDetails and is omitted from the public response. No schema migration is required.
 
 The authenticated, CSRF-protected recovery action restores the five original mobile slides and their original es/en/ar text and driver sections from versioned recovery assets. Images are copied to persistent upload storage. Existing non-original slides are hidden, not deleted. Re-running recovery reuses restored rows and preserves editorial changes. Save/toggle/delete reject stale versions; all mutations remain transactional and audited.
+
+## Portada mixta y actualización automática — 2026-11-23
+
+La app consulta los catálogos públicos cada 30 segundos en primer plano y al volver desde segundo plano. Conserva formularios, sesión y cesta. Agrupa solicitudes simultáneas y aplica la respuesta completa solo tras obtener todos los catálogos. Fallos temporales conservan los datos anteriores.
+
+Las fotos de subida tienen URL versionada por su nombre inmutable para invalidar caché al sustituirlas. El proxy local solo acepta versiones hexadecimales de 16 caracteres.
+
+home-publishing.php permite elegir manual/mixto y recuperar las otras filas originales. Banners y ofertas comparten editor es/en/ar, descripción, foto y destino interno. La recuperación añade las ideas/destinos/experiencias que faltan y conserva cambios posteriores; las ofertas anteriores quedan ocultas.
+
+Mixto añade hasta 4 servicios a ofertas y hasta 4 guías a experiencias, ordenados por reservas aceptadas/completadas de los últimos 90 días. Destinos usa esas reservas y mantiene orden editorial en empates. Se excluyen demos, ocultos, sin fotos y sin reservas. Crea tu viaje permanece editorial. Búsquedas/compras no son señales implementadas. No se exponen datos de clientes ni contadores privados. Sin migración de esquema. Configuración privada _homePublishing/_offerDetails omitida en /home.
+
+Validación: 159 aserciones HTTP aisladas, pruebas del ranking, 13 pruebas Flutter de inicio/navegación/refresco y 6 pruebas del proxy.
