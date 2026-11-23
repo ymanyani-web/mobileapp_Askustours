@@ -1,0 +1,168 @@
+[
+  {
+    "key": "chofer",
+    "image": "chofer.png",
+    "title": {
+      "es": "Coche privado con chófer en España",
+      "en": "Private car with a driver in Spain",
+      "ar": "سيارة خاصة مع سائق في إسبانيا"
+    },
+    "description": {
+      "es": "Descubre España con total comodidad en un coche privado con un conductor profesional. Desde tu llegada al aeropuerto hasta tus visitas y excursiones, te ayudamos a organizar tus desplazamientos según tus necesidades.",
+      "en": "Discover Spain in comfort with a private car and professional driver. From your arrival at the airport to your visits and excursions, we help organize your transport around your needs.",
+      "ar": "اكتشف إسبانيا براحة تامة مع سيارة خاصة وسائق محترف. من لحظة وصولك إلى المطار وحتى زياراتك ورحلاتك، نساعدك على تنظيم تنقلاتك بما يناسب احتياجاتك."
+    },
+    "highlights": [],
+    "sectionHeading": {
+      "es": "Servicios pensados para tu comodidad",
+      "en": "Services designed for your comfort",
+      "ar": "خدمات مصممة لراحتك"
+    },
+    "sections": [
+      {
+        "title": {
+          "es": "Traslados privados",
+          "en": "Private transfers",
+          "ar": "تنقلات خاصة"
+        },
+        "body": {
+          "es": "Desde y hacia aeropuertos, estaciones de tren y hoteles, y entre ciudades y destinos.",
+          "en": "To and from airports, train stations and hotels, and between cities and destinations.",
+          "ar": "من وإلى المطارات ومحطات القطار والفنادق، وبين المدن والوجهات المختلفة."
+        }
+      },
+      {
+        "title": {
+          "es": "Chófer a tu disposición",
+          "en": "Driver at your disposal",
+          "ar": "سائق تحت تصرفك"
+        },
+        "body": {
+          "es": "Reserva un coche con chófer durante varias horas o días, según el programa de tu viaje.",
+          "en": "Book a car with a driver for several hours or days to suit your itinerary.",
+          "ar": "احجز سيارة مع سائق لعدة ساعات أو أيام، بما يتناسب مع برنامج رحلتك."
+        }
+      },
+      {
+        "title": {
+          "es": "Viaja con comodidad",
+          "en": "Travel in comfort",
+          "ar": "سافر بكل راحة"
+        },
+        "body": {
+          "es": "Elige el coche adecuado para tu viaje: una elegante berlina o un vehículo amplio para tu familia y equipaje.",
+          "en": "Choose the right car for your trip, from an elegant sedan to a spacious vehicle for your family and luggage.",
+          "ar": "اختر السيارة المناسبة لرحلتك، سواء سيارة سيدان أنيقة أو سيارة واسعة لعائلتك وأمتعتك."
+        }
+      },
+      {
+        "title": {
+          "es": "Atención y seguimiento",
+          "en": "Care and support",
+          "ar": "اهتمام ومتابعة"
+        },
+        "body": {
+          "es": "Nuestro equipo hace seguimiento de las solicitudes y está disponible para ayudarte antes y durante el servicio.",
+          "en": "Our team follows up on requests and is available to help before and during the service.",
+          "ar": "يتابع فريقنا الطلبات ويتوفر لمساعدتك قبل الخدمة وأثناءها."
+        }
+      },
+      {
+        "title": {
+          "es": "Colaboradores seleccionados con cuidado",
+          "en": "Carefully selected partners",
+          "ar": "شركاء يتم اختيارهم بعناية"
+        },
+        "body": {
+          "es": "Los proveedores registrados en nuestra plataforma pasan por un proceso de revisión antes de su aceptación.",
+          "en": "Service providers registered on our platform undergo a review before being accepted.",
+          "ar": "يخضع مقدمو الخدمات المسجلون في منصتنا لعملية مراجعة قبل قبولهم."
+        }
+      }
+    ],
+    "destination": "drivers"
+  },
+  {
+    "key": "marbella",
+    "image": "marbella.png",
+    "title": {
+      "es": "Estancia en Marbella",
+      "en": "Stay in Marbella",
+      "ar": "إقامة في ماربيا"
+    },
+    "description": {
+      "es": "Una escapada a la Costa del Sol con tiempo para pasear por el casco antiguo y disfrutar del Mediterráneo.",
+      "en": "A Costa del Sol getaway with time to explore the old town and enjoy the Mediterranean.",
+      "ar": "عطلة على كوستا ديل سول مع وقت للتجول في البلدة القديمة والاستمتاع بالبحر المتوسط."
+    },
+    "highlights": [
+      {
+        "es": "Alojamiento junto a la costa",
+        "en": "Coastal accommodation",
+        "ar": "إقامة قرب الساحل"
+      },
+      {
+        "es": "Paseo por el casco antiguo",
+        "en": "Walk through the old town",
+        "ar": "جولة في البلدة القديمة"
+      }
+    ],
+    "sectionHeading": null,
+    "sections": [],
+    "destination": "none"
+  },
+  {
+    "key": "alhambra",
+    "image": "alhambra.png",
+    "title": {
+      "es": "Alhambra de Granada",
+      "en": "Alhambra of Granada",
+      "ar": "قصر الحمراء في غرناطة"
+    },
+    "description": {
+      "es": "Descubre la Alhambra, los jardines del Generalife y las vistas de Granada desde el Albaicín.",
+      "en": "Discover the Alhambra, the Generalife gardens and views of Granada from the Albaicín.",
+      "ar": "اكتشف قصر الحمراء وحدائق جنة العريف وإطلالات غرناطة من حي البيازين."
+    },
+    "highlights": [],
+    "sectionHeading": null,
+    "sections": [],
+    "destination": "none"
+  },
+  {
+    "key": "viaje-espana",
+    "image": "viaje-espana.png",
+    "title": {
+      "es": "Viaje a España",
+      "en": "Trip to Spain",
+      "ar": "رحلة إلى إسبانيا"
+    },
+    "description": {
+      "es": "Una propuesta para descubrir España a tu manera, combinando ciudades, costa y gastronomía.",
+      "en": "A suggested itinerary to discover Spain your way, combining cities, coast and food.",
+      "ar": "اقتراح لاكتشاف إسبانيا بطريقتك، يجمع بين المدن والساحل وفنون الطهي."
+    },
+    "highlights": [],
+    "sectionHeading": null,
+    "sections": [],
+    "destination": "none"
+  },
+  {
+    "key": "viaje-andalucia",
+    "image": "viaje-andalucia.jpeg",
+    "title": {
+      "es": "Viaje en grupo por Andalucía",
+      "en": "Group trip through Andalusia",
+      "ar": "رحلة جماعية في الأندلس"
+    },
+    "description": {
+      "es": "Propuesta de ocho días en grupo para conocer los monumentos, barrios históricos y sabores de Andalucía.",
+      "en": "A suggested eight-day group trip to explore Andalusia’s landmarks, historic neighborhoods and food.",
+      "ar": "برنامج جماعي مقترح لمدة ثمانية أيام للتعرف على معالم الأندلس وأحيائها التاريخية ومأكولاتها."
+    },
+    "highlights": [],
+    "sectionHeading": null,
+    "sections": [],
+    "destination": "none"
+  }
+]

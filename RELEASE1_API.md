@@ -126,3 +126,11 @@ The result remains a request with `paymentStatus: "notCollected"`. Release 1 doe
 - `/v1/booking-status.php`
 
 They return HTTP 410. Mobile code must use quotes, reservation requests and authenticated reservation history.
+
+## Main-slide details and recovery — 23 November 2026
+
+The slide editor is handled by slides.php (content.php?type=banners remains compatible). It edits localized title/description, photo, display order, visibility and a fixed internal destination: none, drivers, guides or designTrip. External HTTPS links remain optional and mutually exclusive with internal destinations.
+
+GET /home banners retains subtitle/linkUrl and adds description, highlights, sectionHeading, sections, destination and opensDrivers. An internal destination opens a button in the existing mobile detail page; drivers preserves the original Reserva ahora behavior. Unknown destinations are ignored by mobile. All banner metadata is stored under home_config._bannerDetails and is omitted from the public response. No schema migration is required.
+
+The authenticated, CSRF-protected recovery action restores the five original mobile slides and their original es/en/ar text and driver sections from versioned recovery assets. Images are copied to persistent upload storage. Existing non-original slides are hidden, not deleted. Re-running recovery reuses restored rows and preserves editorial changes. Save/toggle/delete reject stale versions; all mutations remain transactional and audited.

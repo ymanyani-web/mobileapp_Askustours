@@ -46,7 +46,7 @@ for (const type of ['banners','offers']) {
  for (const order of [90,3]) {
   const html=await page('/content.php?type='+type);
   const body=new FormData();
-  for (const [key,value] of Object.entries({_csrf:field(html,'_csrf'),id:'0',title:type+' '+order,subtitle:'Descripción',link_url:'https://example.com',sort_order:String(order),active:'on'}))body.append(key,value);
+  for (const [key,value] of Object.entries({_csrf:field(html,'_csrf'),id:'0',title:type+' '+order,title_es:type+' '+order,description_es:'Descripción',subtitle:'Descripción',link_url:'https://example.com',sort_order:String(order),active:'on'}))body.append(key,value);
   body.append('image',new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jWZkAAAAASUVORK5CYII=','base64')],{type:'image/png'}),'fixture.png');
   check((await request('/content.php?type='+type,{method:'POST',body})).status,302);
   legacyIds.push({type,id:(await home())[type].find(card=>card.title.es===type+' '+order).id});
@@ -83,10 +83,33 @@ for(const section of ['destinations','experiences']) {
 }
 for(const card of [first,second])check((await post('tripIdeas',{...await form('tripIdeas',card.id),action:'delete'})).status,302);
 for(const item of legacyIds) {
- const html=await page('/content.php?type='+item.type);
- check((await request('/content.php?type='+item.type,{method:'POST',body:new URLSearchParams({_csrf:field(html,'_csrf'),id:item.id.replace(/^[a-z]+_/,''),action:'delete'})})).status,302);
+ const html=await page('/content.php?type='+item.type+'&edit='+item.id.replace(/^[a-z]+_/,''));
+ check((await request('/content.php?type='+item.type,{method:'POST',body:new URLSearchParams({_csrf:field(html,'_csrf'),revision:item.type==='banners'?field(html,'revision'):'',id:item.id.replace(/^[a-z]+_/,''),action:'delete'})})).status,302);
 }
 const after=await home();
 for(const key of ['banners','offers','shortcuts','planningFee','tripIdeas'])check(after[key],before[key]);
 check((await request('/media.php?type=home_private&id=1')).status,404);
+const slidePage=await page('/content.php?type=banners');
+check((await request('/content.php?type=banners',{method:'POST',body:new URLSearchParams({_csrf:field(slidePage,'_csrf'),action:'restore'})})).status,302);
+const restored=await home();
+check(restored.banners.length,5);
+check(restored.banners[0].destination,'drivers');
+check(restored.banners[0].opensDrivers,true);
+check(restored.banners[0].sections.length,5);
+check(restored.banners[0].title.ar,'سيارة خاصة مع سائق في إسبانيا');
+check('_bannerDetails' in restored,false);
+check(restored.offers,before.offers);
+check(restored.planningFee,before.planningFee);
+for(const slide of restored.banners)check((await fetch(slide.imageUrl)).status,200);
+const slideId=restored.banners[0].id.replace('banner_','');
+const editSlide=await page('/content.php?type=banners&edit='+slideId);
+const editData={_csrf:field(editSlide,'_csrf'),id:slideId,revision:field(editSlide,'revision'),title_es:'Título editado',description_es:'Descripción editada',title_ar:restored.banners[0].title.ar,sort_order:'0',destination:'guides',active:'on'};
+check((await request('/content.php?type=banners',{method:'POST',body:new URLSearchParams(editData)})).status,302);
+check((await home()).banners[0].destination,'guides');
+check((await home()).banners[0].sections.length,5);
+check((await request('/content.php?type=banners',{method:'POST',body:new URLSearchParams(editData)})).status,200);
+const repeatPage=await page('/content.php?type=banners');
+check((await request('/content.php?type=banners',{method:'POST',body:new URLSearchParams({_csrf:field(repeatPage,'_csrf'),action:'restore'})})).status,302);
+check((await home()).banners.length,5);
+check((await home()).banners[0].title.es,'Título editado');
 console.log(`Isolated homepage HTTP checks passed: ${assertions} assertions.`);
