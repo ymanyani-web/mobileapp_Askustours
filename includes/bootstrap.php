@@ -104,6 +104,13 @@ function public_content_media_url(string $type, int $id, ?string $path): string
     return rtrim((string)$config['base_url'], '/') . '/media.php?type=' . rawurlencode($type) . '&id=' . $id . '&v=' . substr(hash('sha256',$path),0,16);
 }
 
+function owned_upload(string $uid,?string $id,?string $purpose=null): bool {
+    if(!$id)return false;
+    $s=db()->prepare('SELECT path FROM uploads WHERE id=? AND user_id=?'.($purpose?' AND purpose=?':''));$s->execute($purpose?[$id,$uid,$purpose]:[$id,$uid]);$path=$s->fetchColumn();
+    if(!is_string($path))return false;
+    return str_starts_with($path,'private-documents/')?function_exists('partner_private_file')&&partner_private_file($path)!==null:stored_asset_file($path)!==null;
+}
+
 function public_asset_available(?string $path): bool
 {
     $path = trim((string)$path);

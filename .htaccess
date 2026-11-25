@@ -2,6 +2,7 @@ Options -Indexes
 RewriteEngine On
 RewriteRule (^|/)\.git(?:/|$) - [F,L]
 RewriteRule ^tests/ - [F,L]
+RewriteRule ^includes/ - [F,L]
 RewriteRule ^uploads/[^/]+/ - [F,L]
 
 <FilesMatch "^(config(?:\.local)?\.php|.*\.sql|.*\.md)$">

@@ -12,7 +12,7 @@ function account_control(string $uid): array {
 function account_enabled(string $uid): bool {return (account_control($uid)['status']??'active')==='active';}
 function partner_operational(string $uid): bool {
     if(!account_enabled($uid))return false;
-    $s=db()->prepare('SELECT status FROM partner_profiles WHERE user_id=?');$s->execute([$uid]);return $s->fetchColumn()==='approved';
+    $s=db()->prepare('SELECT status,profile_json FROM partner_profiles WHERE user_id=?');$s->execute([$uid]);$row=$s->fetch();if(!$row||$row['status']!=='approved')return false;$profile=json_decode($row['profile_json'],true);if(($profile['onboarding']['businessType']??'')==='employee')return false;if(isset($profile['onboarding'])){require_once __DIR__.'/partner_registration.php';foreach(partner_required_documents($profile['onboarding'],partner_registration_config()) as $rule)if($rule['required']){$doc=null;foreach($profile['onboarding']['documents']??[] as $candidate)if($candidate['requirementId']===$rule['id'])$doc=$candidate;if(!$doc||partner_document_state($doc,$profile['_documentReviews'][$rule['id']]??null)!=='verified')return false;}}return true;
 }
 
 function account_labels(): array {return ['active'=>'Activa','inactive'=>'Desactivada','blocked'=>'Bloqueada'];}
@@ -51,7 +51,7 @@ function apply_account_decision(string $uid,string $action,string $status,string
             if($status==='approved') {
                 if($control['status']!=='active')throw new RuntimeException('Reactiva la cuenta antes de aprobar el registro profesional.');
                 if(!in_array($profile['status'],['submitted','suspended','rejected'],true))throw new RuntimeException('El colaborador debe completar y enviar su registro antes de aprobarlo.');
-                $data=json_decode($profile['profile_json'],true,512,JSON_THROW_ON_ERROR);
+                $data=json_decode($profile['profile_json'],true,512,JSON_THROW_ON_ERROR);require_once __DIR__.'/partner_registration.php';partner_approval_checks($uid,$data);
                 foreach(['businessName','contactName','phone','email','activity','professionalPhotoUploadId'] as $field)if(empty($data[$field]))throw new RuntimeException('El registro está incompleto: '.$field.'.');
                 if(empty($data['cities'])&&empty($data['citiesText']))throw new RuntimeException('Indica las ciudades del colaborador antes de aprobarlo.');
                 $photo=db()->prepare("SELECT path FROM uploads WHERE id=? AND user_id=? AND purpose='professional-photo'");$photo->execute([$data['professionalPhotoUploadId'],$uid]);$path=$photo->fetchColumn();

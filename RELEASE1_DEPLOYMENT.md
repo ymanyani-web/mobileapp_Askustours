@@ -66,3 +66,7 @@ Before running the mobile staging matrix, approve a collaborator, review its ser
 - Payment status remains `notCollected`; no card data is accepted.
 - Public fixture reviews and catalog records must not be presented as verified real records.
 - Keep customer, collaborator and administrator authentication separate.
+
+## Ampliación del registro profesional
+
+El contrato aditivo y los controles del registro de siete pasos, documentos privados, vehículos, proyección pública, requisitos y comisiones se describen en [PARTNER_REGISTRATION_HANDOFF.md](PARTNER_REGISTRATION_HANDOFF.md). Se conserva schemaVersion 1 y el comportamiento de perfiles históricos. Firebase continúa como autenticación; PHP/MySQL conserva los datos. No requiere migración SQL. Los perfiles nuevos no pueden enviarse hasta publicar las condiciones legales y revisar los requisitos desde administración.

@@ -149,3 +149,7 @@ Validación: 159 aserciones HTTP aisladas, pruebas del ranking, 13 pruebas Flutt
 
 ## Administrative account restrictions
 Blocked/inactive accounts cannot obtain or refresh backend sessions or use private routes (ACCOUNT_RESTRICTED, HTTP 403; revoked sessions remain 401). Existing public_user fields are unchanged. Collaborator approval is separate from account access. assigned jobs may be accepted/declined with the existing version/policy checks. Wallets remain read-only. See ADMIN_OPERATIONS_2026_11_23.md.
+
+## Ampliación del registro profesional
+
+El contrato aditivo y los controles del registro de siete pasos, documentos privados, vehículos, proyección pública, requisitos y comisiones se describen en [PARTNER_REGISTRATION_HANDOFF.md](PARTNER_REGISTRATION_HANDOFF.md). Se conserva schemaVersion 1 y el comportamiento de perfiles históricos. Firebase continúa como autenticación; PHP/MySQL conserva los datos. No requiere migración SQL. Los perfiles nuevos no pueden enviarse hasta publicar las condiciones legales y revisar los requisitos desde administración.

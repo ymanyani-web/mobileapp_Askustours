@@ -328,3 +328,7 @@ The server returns at most the 50 most recent wallet movements in Release 1. Wal
 - Missing physical upload file: HTTP 404 `NOT_FOUND`.
 
 Do not treat a media URL as public. Send the bearer token only to the configured HALA SPAIN API origin.
+
+## Ampliación del registro profesional
+
+El contrato aditivo y los controles del registro de siete pasos, documentos privados, vehículos, proyección pública, requisitos y comisiones se describen en [PARTNER_REGISTRATION_HANDOFF.md](PARTNER_REGISTRATION_HANDOFF.md). Se conserva schemaVersion 1 y el comportamiento de perfiles históricos. Firebase continúa como autenticación; PHP/MySQL conserva los datos. No requiere migración SQL. Los perfiles nuevos no pueden enviarse hasta publicar las condiciones legales y revisar los requisitos desde administración.
