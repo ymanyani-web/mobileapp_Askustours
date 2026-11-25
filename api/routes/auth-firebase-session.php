@@ -33,12 +33,13 @@ $provider=implode(',',array_slice($identity['providers'],0,4));
 db()->beginTransaction();
 if($user){
  $lock=db()->prepare('SELECT id FROM users WHERE id=? FOR UPDATE');$lock->execute([$user['id']]);ensure_active_account((string)$user['id']);
- db()->prepare('UPDATE users SET firebase_uid=?,firebase_provider=?,email=COALESCE(email,?),phone=COALESCE(phone,?),verified_at=COALESCE(verified_at,NOW()) WHERE id=?')->execute([$identity['uid'],$provider?:null,$identity['email'],$identity['phone'],$user['id']]);
+ db()->prepare('UPDATE users SET firebase_uid=?,firebase_provider=?,email=COALESCE(?,email),phone=COALESCE(?,phone),verified_at=COALESCE(verified_at,NOW()) WHERE id=?')->execute([$identity['uid'],$provider?:null,$identity['email'],$identity['phone'],$user['id']]);
  $userId=(string)$user['id'];
 }else{
  $userId=uuid();
  db()->prepare("INSERT INTO users(id,firebase_uid,firebase_provider,first_name,last_name,email,phone,role,partner_intent,verified_at,profile_json,preferences_json) VALUES(?,?,?,?,?,?,?,?,?,NOW(),'{}','{}')")->execute([$userId,$identity['uid'],$provider?:null,$first,$last,$identity['email'],$identity['phone'],$role,$role==='partner']);
 }
+$verifiedProfile=db()->prepare('SELECT profile_json FROM users WHERE id=?');$verifiedProfile->execute([$userId]);$identityProfile=decoded($verifiedProfile->fetchColumn());$identityProfile['_verifiedContacts']=['email'=>$identity['email'],'phone'=>$identity['phone']];db()->prepare('UPDATE users SET profile_json=? WHERE id=?')->execute([encoded($identityProfile),$userId]);
 $access=bin2hex(random_bytes(32));$refresh=bin2hex(random_bytes(32));$sessionId=uuid();
 db()->prepare('INSERT INTO sessions(id,user_id,access_token_hash,refresh_token_hash,access_expires_at,refresh_expires_at) VALUES(?,?,?,?,DATE_ADD(NOW(),INTERVAL 1 HOUR),DATE_ADD(NOW(),INTERVAL 30 DAY))')->execute([$sessionId,$userId,hash('sha256',$access),hash('sha256',$refresh)]);
 db()->commit();

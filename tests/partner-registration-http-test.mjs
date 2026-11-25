@@ -14,6 +14,7 @@ async function admin(path,options={}){
  const current=response.headers.getSetCookie().find(v=>v.startsWith('PHPSESSID='));if(current)cookie=current.split(';')[0];return response;
 }
 function field(html,name){const value=html.match(new RegExp(`name="${name}" value="([^"]*)"`))?.[1];assert.notEqual(value,undefined);return value;}
+const blockedBooking=await api('/reservation-requests',{role:'customer',method:'POST',body:{}});check(blockedBooking.status,403);check(blockedBooking.error.code,'PHONE_VERIFICATION_REQUIRED');
 const config=(await api('/me/partner-registration-config')).data;check(config.categories.length,6);
 check((await api('/me/partner-registration-config',{role:'customer'})).status,403);
 const home=await api('/home');check('_partnerRegistration' in home.data,false);
