@@ -26,16 +26,11 @@ function partner_registration_defaults(): array {
     ] as [$id,$es,$en,$ar])$categories[]=['id'=>$id,'title'=>$text($es,$en,$ar)];
     $documents=[];
     foreach([
-        ['identity','Identificación del titular o representante','Holder or representative ID','هوية المالك أو الممثل',[],true,false],
-        ['fiscal','Documentación fiscal o de empresa','Tax or company documentation','وثائق ضريبية أو وثائق الشركة',[],true,false],
-        ['driving','Permiso de conducir','Driving licence','رخصة القيادة',['driver'],false,true],
-        ['transport','Autorización de transporte aplicable','Applicable transport authorisation','ترخيص النقل المعمول به',['driver','rental'],false,true],
-        ['guide','Acreditación de guía','Guide accreditation','اعتماد المرشد',['guide'],false,true],
-        ['insurance','Seguro de responsabilidad civil','Liability insurance','تأمين المسؤولية',['guide','experience','rental'],false,true],
-        ['licence','Licencias y permisos de la actividad','Activity licences and permits','تراخيص وتصاريح النشاط',['experience','accommodation','other'],false,true],
-        ['tourism','Registro turístico y capacidad de comercialización','Tourism registration and marketing authority','التسجيل السياحي وصلاحية التسويق',['accommodation'],false,false],
-        ['employment','Vinculación con la empresa','Company affiliation','الارتباط بالشركة',[],false,false],
-    ] as [$id,$es,$en,$ar,$activities,$required,$expires])$documents[]=['id'=>$id,'title'=>$text($es,$en,$ar),'categories'=>$activities,'required'=>$required,'expires'=>$expires,'businessTypes'=>$id==='employment'?['employee']:[],'cities'=>[]];
+        ['identity','DNI / NIE','National ID / residence permit','بطاقة الهوية أو الإقامة',[]],
+        ['driving','Permiso de conducir','Driving licence','رخصة القيادة',['driver']],
+        ['transport','Autorización VTC','VTC authorisation','ترخيص النقل الخاص VTC',['driver']],
+        ['guide','Carné de guía turístico','Tour guide card','بطاقة المرشد السياحي',['guide']],
+    ] as [$id,$es,$en,$ar,$activities])$documents[]=['id'=>$id,'title'=>$text($es,$en,$ar),'categories'=>$activities,'required'=>true,'expires'=>false,'businessTypes'=>[],'cities'=>[]];
     $cities=[];
     foreach(['madrid'=>'Madrid','barcelona'=>'Barcelona','malaga'=>'Málaga','marbella'=>'Marbella','sevilla'=>'Sevilla','granada'=>'Granada','cordoba'=>'Córdoba','valencia'=>'Valencia','alicante'=>'Alicante','bilbao'=>'Bilbao','toledo'=>'Toledo','palma'=>'Palma de Mallorca'] as $id=>$name)$cities[]=['id'=>$id,'name'=>$name];
     $defaults=json_decode(file_get_contents(__DIR__.'/partner-registration-defaults.json'),true,512,JSON_THROW_ON_ERROR);
@@ -45,7 +40,17 @@ function partner_registration_defaults(): array {
 function partner_registration_config(): array {
     $raw=db()->query('SELECT config_json FROM home_config WHERE id=1')->fetchColumn();
     $home=$raw?json_decode($raw,true,512,JSON_THROW_ON_ERROR):[];
-    return array_replace(partner_registration_defaults(),$home['_partnerRegistration']??[]);
+    $config=array_replace(partner_registration_defaults(),$home['_partnerRegistration']??[]);
+    $config['documents']=partner_document_rules($config['documents']);
+    return $config;
+}
+
+// Preserve wire IDs and private files; retire legacy initial requirements without deleting evidence.
+function partner_document_rules(array $stored): array {
+    $rules=partner_registration_defaults()['documents'];
+    foreach($rules as &$rule)foreach($stored as $old)if(($old['id']??'')===$rule['id'])$rule['expires']=!empty($old['expires']);unset($rule);
+    foreach($stored as $rule)if(!empty($rule['additional'])&&!in_array($rule['id'],array_column($rules,'id'),true))$rules[]=$rule;
+    return $rules;
 }
 
 function partner_review_state(array $row,array $profile): string {
@@ -90,8 +95,9 @@ function partner_onboarding_validate(array $draft,string $uid,bool $complete=fal
     if(isset($draft['languageLevels'])&&(!is_array($draft['languageLevels'])||count($draft['languageLevels'])>50))throw new InvalidArgumentException('Invalid language level.');if(isset($draft['languageLevels']))$draft['languageLevels']=array_intersect_key($draft['languageLevels'],array_flip($draft['languages']??[]));foreach($draft['languageLevels']??[] as $language=>$level)if(!in_array($level,['A1','A2','B1','B2','C1','C2'],true))throw new InvalidArgumentException('Invalid language level.');
     foreach(['professionalPhotoUploadId'=>'professional-photo','coverUploadId'=>'professional-cover'] as $key=>$purpose)if(!empty($draft[$key])&&!owned_upload($uid,(string)$draft[$key],$purpose))throw new InvalidArgumentException('Photo is not owned by this account.');
     foreach($draft['galleryUploadIds']??[] as $id)if(!is_string($id)||!owned_upload($uid,$id,'professional-gallery'))throw new InvalidArgumentException('Gallery image is not owned.');
+    $applicable=array_column(partner_required_documents($draft,partner_registration_config()),null,'id');
     $documents=[];
-    foreach($draft['documents']??[] as $document){if(!is_array($document)||!preg_match('/^[a-z0-9_-]{1,60}$/',$document['requirementId']??'')||empty($document['uploadId'])||!owned_upload($uid,(string)$document['uploadId'],'professional-document'))throw new InvalidArgumentException('Invalid private document.');$expiry=$document['expiresAt']??null;if($expiry!==null&&(!is_string($expiry)||!preg_match('/^\d{4}-\d{2}-\d{2}$/',$expiry)||!strtotime($expiry)))throw new InvalidArgumentException('Invalid expiry date.');$documents[$document['requirementId']]=['requirementId'=>$document['requirementId'],'uploadId'=>$document['uploadId'],'expiresAt'=>$expiry];}
+    foreach($draft['documents']??[] as $document){if(!is_array($document)||!preg_match('/^[a-z0-9_-]{1,60}$/',$document['requirementId']??'')||empty($document['uploadId'])||!owned_upload($uid,(string)$document['uploadId'],'professional-document'))throw new InvalidArgumentException('Invalid private document.');if(!isset($applicable[$document['requirementId']]))throw new InvalidArgumentException('Document not applicable to the selected activities.');$expiry=$document['expiresAt']??null;if($expiry!==null&&(!is_string($expiry)||!preg_match('/^\d{4}-\d{2}-\d{2}$/',$expiry)||!strtotime($expiry)))throw new InvalidArgumentException('Invalid expiry date.');$documents[$document['requirementId']]=['requirementId'=>$document['requirementId'],'uploadId'=>$document['uploadId'],'expiresAt'=>$expiry];}
     $draft['documents']=array_values($documents);
     if($complete){
         foreach(['firstName','lastName','phone','email','country','businessType','experienceYears','publicName','professionalPhotoUploadId'] as $key)if(trim((string)($draft[$key]??''))==='')throw new InvalidArgumentException('Required: '.$key);
@@ -147,6 +153,7 @@ function partner_service_authorized(string $uid,array $service,string $type): bo
     $s=db()->prepare('SELECT profile_json FROM partner_profiles WHERE user_id=?');$s->execute([$uid]);$profile=json_decode($s->fetchColumn()?:'{}',true,512,JSON_THROW_ON_ERROR);
     if(!isset($profile['onboarding']))return true;
     if(($profile['onboarding']['businessType']??'')==='employee')return false;
+    if(!in_array($type,$profile['onboarding']['categories']??[],true))return false;
     if($type==='driver'){
         $vehicle=$profile['_vehicles'][$service['vehicleId']??'']??null;
         if(!$vehicle||($vehicle['status']??'')!=='approved')return false;

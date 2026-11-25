@@ -15,7 +15,7 @@ async function admin(path,options={}){
 }
 function field(html,name){const value=html.match(new RegExp(`name="${name}" value="([^"]*)"`))?.[1];assert.notEqual(value,undefined);return value;}
 const blockedBooking=await api('/reservation-requests',{role:'customer',method:'POST',body:{}});check(blockedBooking.status,403);check(blockedBooking.error.code,'PHONE_VERIFICATION_REQUIRED');
-const config=(await api('/me/partner-registration-config')).data;check(config.categories.length,6);
+const config=(await api('/me/partner-registration-config')).data;check(config.categories.length,6);check(config.documents.map(d=>d.id),['identity','driving','transport','guide']);
 check((await api('/me/partner-registration-config',{role:'customer'})).status,403);
 const home=await api('/home');check('_partnerRegistration' in home.data,false);
 const image='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jWZkAAAAASUVORK5CYII=';
@@ -29,7 +29,7 @@ check((await api('/uploads',{method:'POST',body:{purpose:'professional-document'
 const ownerRead=await fetch(identity.url,{headers:{Authorization:'Bearer '+token('partner')}});check(ownerRead.status,200);check(ownerRead.headers.get('cache-control'),'private, no-store');
 check((await fetch(identity.url,{headers:{Authorization:'Bearer '+token('customer')}})).status,404);
 check((await fetch(identity.url)).status,401);
-const draft={step:0,categories:['driver','guide'],firstName:'Synthetic',lastName:'Partner',phone:'+34600000000',email:'synthetic@example.test',country:'España',languages:['es','ar'],businessType:'self_employed',fiscalName:'Synthetic Partner',businessName:'Synthetic Travel',taxId:'SYNTHETIC-ONLY',fiscalAddress:'Synthetic address',postalCode:'28000',city:'Madrid',province:'Madrid',fiscalCountry:'España',experienceYears:'5',workCities:[{id:'madrid',name:'Madrid'},{id:'es:custom-town',name:'Synthetic town'}],zones:['city','intercity'],publicName:'Synthetic Professional',descriptions:{es:'Perfil de prueba aislada.',ar:'ملف اختبار معزول'},specialties:['History'],professionalPhotoUploadId:photo.id,documents:[{requirementId:'identity',uploadId:identity.id,expiresAt:null},{requirementId:'fiscal',uploadId:fiscal.id,expiresAt:null}]};
+const draft={step:0,categories:['driver','guide'],firstName:'Synthetic',lastName:'Partner',phone:'+34600000000',email:'synthetic@example.test',country:'España',languages:['es','ar'],businessType:'self_employed',fiscalName:'Synthetic Partner',businessName:'Synthetic Travel',taxId:'SYNTHETIC-ONLY',fiscalAddress:'Synthetic address',postalCode:'28000',city:'Madrid',province:'Madrid',fiscalCountry:'España',experienceYears:'5',workCities:[{id:'madrid',name:'Madrid'},{id:'es:custom-town',name:'Synthetic town'}],zones:['city','intercity'],publicName:'Synthetic Professional',descriptions:{es:'Perfil de prueba aislada.',ar:'ملف اختبار معزول'},specialties:['History'],professionalPhotoUploadId:photo.id,documents:[{requirementId:'identity',uploadId:identity.id,expiresAt:null},{requirementId:'driving',uploadId:fiscal.id,expiresAt:null},{requirementId:'transport',uploadId:fiscal.id,expiresAt:null},{requirementId:'guide',uploadId:fiscal.id,expiresAt:null}]};
 let profile=(await api('/me/partner-profile')).data;check(profile.status,'draft');
 async function save(value=draft){const result=await api('/me/partner-profile',{method:'PUT',body:{schemaVersion:1,expectedRevision:profile.revision,onboarding:value}});check(result.status,200);profile=result.data;return profile;}
 await save();check(profile.onboarding.categories,['driver','guide']);check(profile.savedAt.length>0,true);
@@ -61,7 +61,7 @@ await decide('document','rejected',{requirementId:'identity'});check(profile.rev
 const replacement=await upload('professional-document');draft.documents[0].uploadId=replacement.id;
 await save(draft);check(profile.documents.find(d=>d.requirementId==='identity').status,'attached');
 submitBody={expectedRevision:profile.revision,informationCorrect:true,acceptances};submitted=await api('/me/partner-profile/submission',{method:'POST',body:submitBody,headers:{'Idempotency-Key':crypto.randomUUID()}});check(submitted.status,202);profile=submitted.data;
-await decide('document','verified',{requirementId:'identity'});await decide('document','verified',{requirementId:'fiscal'});await decide('profile','approved');check(profile.status,'approved');
+await decide('document','verified',{requirementId:'identity'});for(const requirementId of ['driving','transport','guide'])await decide('document','verified',{requirementId});await decide('profile','approved');check(profile.status,'approved');
 const publicProfile=await api('/collaborators/'+fixture.users.partner);check(publicProfile.status,200);for(const key of ['phone','email','taxId','documents','fiscalAddress','firstName','lastName'])check(key in publicProfile.data,false);
 check((await fetch(base+'/api/v1/collaborators/'+fixture.users.partner+'/media/'+identity.id)).status,404);
 check((await fetch(publicProfile.data.photoUrl)).status,200);

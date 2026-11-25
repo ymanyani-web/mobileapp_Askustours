@@ -70,3 +70,5 @@ Before running the mobile staging matrix, approve a collaborator, review its ser
 ## Ampliación del registro profesional
 
 El contrato aditivo y los controles del registro de siete pasos, documentos privados, vehículos, proyección pública, requisitos y comisiones se describen en [PARTNER_REGISTRATION_HANDOFF.md](PARTNER_REGISTRATION_HANDOFF.md). Se conserva schemaVersion 1 y el comportamiento de perfiles históricos. Firebase continúa como autenticación; PHP/MySQL conserva los datos. No requiere migración SQL. Los perfiles nuevos no pueden enviarse hasta publicar las condiciones legales y revisar los requisitos desde administración.
+
+Actualización 0.1.9: la UI profesional usa tres pantallas y cuatro apartados documentales. Se conserva el contrato y los índices persistidos 0–6; los nuevos requisitos y sus validaciones están documentados en PARTNER_REGISTRATION_HANDOFF.md. Sin migración de base de datos.

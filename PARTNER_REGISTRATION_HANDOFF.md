@@ -54,3 +54,13 @@ El gestor existente `catalog.php?view=content` permite crear/publicar los textos
 Pruebas HTTP sobre MariaDB aislada 127.0.0.1:33387 con datos sintéticos: autónomo, empresa, empleado, actividades múltiples, recuperación, revisiones, PDF/PNG, propiedad, rechazo/sustitución, aprobación, varios vehículos, proyección pública, configuración y permisos. Pruebas de política: vehículos pendientes, empleados, caducidad, revisión inválida tras sustituir archivo y prioridad de comisiones. Incluye sintaxis PHP, smoke de Release 1 y diff.
 
 Las pruebas aisladas no prueban alta real de Firebase, pagos, FCM o iOS físico. La entrega móvil recoge la evidencia de Flutter, APK, web y publicación.
+
+## Actualización 0.1.9 — documentación profesional compacta
+
+El editor existente muestra tres pantallas: actividades; datos y perfil profesional; documentación y revisión. Los índices `onboarding.step` 0–6 siguen siendo compatibles con borradores antiguos: se agrupan en [0], [1,2,4,5], [3,6]. No cambia schemaVersion ni el almacenamiento MySQL, Firebase, OTP o clientes.
+
+La configuración normaliza cuatro IDs existentes: `identity` (DNI/NIE, todas), `driving` (conductor), `transport` (VTC, solo conductor), `guide` (guía). Conductor+guía combina los cuatro; alquiler sin conductor solo identificación. Todos aparecen en Flutter; los no aplicables se bloquean. Son requisitos para enviar/revisar, no para guardar borradores. Se conservan las preferencias administrativas de caducidad. Los antiguos documentos fiscales, seguros y otros no se solicitan inicialmente; sus archivos privados no se borran automáticamente.
+
+Administración puede añadir posteriormente reglas con `additional:true` mediante la configuración existente y solicitar correcciones desde la ficha. Dichas reglas siguen admitiendo ámbito por actividad y zona; no se duplican los cuatro IDs. El servidor rechaza documentos desconocidos/no aplicables incluso al guardar un borrador, comprueba propiedad y propósito, y conserva la validación exclusiva del estado administrativo. La publicación exige perfil aprobado y documentos requeridos verificados/vigentes; cambiar un archivo no hereda la revisión del anterior. Los servicios tampoco pueden publicarse bajo una actividad no registrada.
+
+Pruebas: matriz PHP aislada sin base real; pruebas Flutter de combinaciones, borradores, requisitos posteriores, estados bloqueados, RTL y tres pantallas. La prueba HTTP existente se adapta a los cuatro IDs. No hay migración SQL ni cambios de credenciales.

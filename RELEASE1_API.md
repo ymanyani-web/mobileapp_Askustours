@@ -166,3 +166,6 @@ Flutter reuses the existing traveler form route, lets customers save incomplete 
 Validation: 13 isolated PHP policy/date/ownership-boundary checks, syntax checks, and focused Flutter tests. Production persistence and deployment require verification; passing a local helper test is not proof of live MySQL behavior.
 
 Public metadata adds customerTravelerDetailsVersion: 1 for deployment verification.
+
+### Registro profesional compacto (0.1.9)
+`GET /me/partner-registration-config` publica los cuatro IDs canónicos identity/driving/transport/guide; los adicionales creados por administración llevan `additional:true`. `PUT /me/partner-profile` sigue aceptando borradores incompletos con índices 0–6, pero rechaza documentos no aplicables a sus actividades. Flutter agrupa los índices en tres pantallas. Ver PARTNER_REGISTRATION_HANDOFF.md para compatibilidad, privacidad y condiciones de publicación. No cambia schemaVersion.
