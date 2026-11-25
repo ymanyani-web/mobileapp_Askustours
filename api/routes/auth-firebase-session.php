@@ -10,9 +10,9 @@ if(!$user){
  if($identity['phone']!==null){$conditions[]='phone=?';$parameters[]=$identity['phone'];}
  $matches=[];
  if($conditions){$existing=db()->prepare('SELECT * FROM users WHERE '.implode(' OR ',$conditions));$existing->execute($parameters);$matches=$existing->fetchAll();}
- if(count($matches)>1)fail(409,'FIREBASE_IDENTITY_CONFLICT','The verified Firebase identifiers belong to different HALA SPAIN accounts.');
+ if(count($matches)>1)fail(409,'FIREBASE_IDENTITY_CONFLICT','The verified Firebase identifiers belong to different Ask Us App accounts.');
  $user=$matches[0]??null;
- if($user&&!empty($user['firebase_uid'])&&!hash_equals((string)$user['firebase_uid'],(string)$identity['uid']))fail(409,'FIREBASE_IDENTITY_CONFLICT','This HALA SPAIN account is already linked to another Firebase identity.');
+ if($user&&!empty($user['firebase_uid'])&&!hash_equals((string)$user['firebase_uid'],(string)$identity['uid']))fail(409,'FIREBASE_IDENTITY_CONFLICT','This Ask Us App account is already linked to another Firebase identity.');
 }
 
 $displayParts=preg_split('/\s+/u',$identity['displayName'],-1,PREG_SPLIT_NO_EMPTY)?:[];
@@ -26,7 +26,7 @@ if($user){
  $conflictConditions=[];$conflictParameters=[$user['id']];
  if($identity['email']!==null){$conflictConditions[]='email=?';$conflictParameters[]=$identity['email'];}
  if($identity['phone']!==null){$conflictConditions[]='phone=?';$conflictParameters[]=$identity['phone'];}
- if($conflictConditions){$conflict=db()->prepare('SELECT 1 FROM users WHERE id<>? AND ('.implode(' OR ',$conflictConditions).') LIMIT 1');$conflict->execute($conflictParameters);if($conflict->fetchColumn())fail(409,'FIREBASE_IDENTITY_CONFLICT','A verified Firebase identifier belongs to another HALA SPAIN account.');}
+ if($conflictConditions){$conflict=db()->prepare('SELECT 1 FROM users WHERE id<>? AND ('.implode(' OR ',$conflictConditions).') LIMIT 1');$conflict->execute($conflictParameters);if($conflict->fetchColumn())fail(409,'FIREBASE_IDENTITY_CONFLICT','A verified Firebase identifier belongs to another Ask Us App account.');}
 }
 
 $provider=implode(',',array_slice($identity['providers'],0,4));

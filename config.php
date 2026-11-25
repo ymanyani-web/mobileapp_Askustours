@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 $env=static function(string $key,string $default):string{$value=getenv($key);return $value===false?$default:$value;};
 $settings=[
-    'app_name' => 'HALA SPAIN',
+    'app_name' => 'Ask Us App',
     'auth_dev_code' => $env('AUTH_DEV_CODE', ''),
     'api_public_base_url' => rtrim($env('API_PUBLIC_BASE_URL', 'https://api.askustours.com/v1'), '/'),
     'otp' => [
@@ -39,7 +39,7 @@ return $settings;
 
 /* 
 return [
-    'app_name' => 'HALA SPAIN',
+    'app_name' => 'Ask Us App',
     //'base_url' => getenv('APP_URL') ?: 'http://localhost:8000',
     'base_url' => getenv('APP_URL') ?: 'https://admin.askustours.com',
     'db' => [
