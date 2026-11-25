@@ -9,7 +9,7 @@ function partner_private_storage_root(): string {
     return ($public===false?$root:substr($root,0,$public)).'/.askus-private-documents';
 }
 function partner_private_file(string $path): ?string {
-    if(!preg_match('#^private-documents/([a-f0-9-]{36}/[a-f0-9-]{36}\.(?:pdf|jpg|png))$#',$path,$m))return null;
+    if(!preg_match('#^private-documents/([a-f0-9-]{36}/[a-f0-9-]{36}\.(?:pdf|jpg|png|webp))$#',$path,$m))return null;
     $file=partner_private_storage_root().'/'.$m[1];return is_file($file)?$file:null;
 }
 // Extends partner_profiles.profile_json; there is still one profile per user.

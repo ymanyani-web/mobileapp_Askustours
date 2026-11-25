@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-function traveler_extra_fields():array{return ['birthDate','gender','nationality','residenceCountry','documentType','documentNumber','documentCountry','documentIssueDate','documentExpiryDate','region','taxNumber'];}
+function traveler_extra_fields():array{return ['passportUploadId','birthDate','gender','nationality','residenceCountry','documentType','documentNumber','documentCountry','documentIssueDate','documentExpiryDate','region','taxNumber'];}
 function validate_traveler_extra(mixed $raw):array {
     if(!is_array($raw))fail(422,'VALIDATION_ERROR','Invalid traveler details.',['travelerDetails'=>['Expected an object.']]);
     $unknown=array_diff(array_keys($raw),traveler_extra_fields());if($unknown)fail(422,'VALIDATION_ERROR','Invalid traveler fields.',['travelerDetails'=>['Unknown fields.']]);
@@ -15,7 +15,7 @@ function validate_traveler_extra(mixed $raw):array {
 function traveler_requirements(array $service):array {
     $allowed=array_merge(['firstName','lastName','phone','email','address','city','postalCode','country'],traveler_extra_fields());
     $extra=is_array($service['travelerRequirements']??null)?array_values(array_intersect(array_filter($service['travelerRequirements'],'is_string'),$allowed)):[];
-    return array_values(array_unique(array_merge(['firstName','lastName','phone'],$extra)));
+    $extra=array_map(fn($field)=>in_array($field,['documentNumber','documentCountry','documentIssueDate','documentExpiryDate','documentType'],true)?'passportUploadId':$field,$extra);return array_values(array_unique(array_merge(['firstName','lastName','phone'],$extra)));
 }
 function traveler_profile_values(array $user):array {
     $profile=decoded($user['profile_json']);
@@ -25,6 +25,6 @@ function require_traveler_profile(array $user,array $requirements):array {
     $values=traveler_profile_values($user);$errors=[];$snapshot=[];
     foreach($requirements as $field){if(trim((string)($values[$field]??''))==='')$errors['travelerDetails.'.$field]=['Required for this service.'];else $snapshot[$field]=$values[$field];}
     if(in_array('documentExpiryDate',$requirements,true)&&!empty($values['documentExpiryDate'])&&$values['documentExpiryDate']<gmdate('Y-m-d'))$errors['travelerDetails.documentExpiryDate']=['The document has expired.'];
-    if($errors)fail(422,'TRAVELER_DETAILS_REQUIRED','Complete the traveler details for this service.',$errors);
+    if(in_array('passportUploadId',$requirements,true)&&!empty($values['passportUploadId'])&&!owned_upload($user['id'],(string)$values['passportUploadId'],'customer-passport'))$errors['travelerDetails.passportUploadId']=['An owned private passport photo is required.'];if($errors)fail(422,'TRAVELER_DETAILS_REQUIRED','Complete the traveler details for this service.',$errors);
     return $snapshot;
 }
