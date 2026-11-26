@@ -185,3 +185,6 @@ Approval creates or updates the same service ID in the existing catalog as a non
 `POST /auth/firebase-session` accepts an initially nameless `accountRole: partner` draft after verified Firebase proof. Customer first-time registration still requires firstName/lastName. No invented names are inserted. An existing authenticated account opting into professional registration sets partner_intent without changing its stored role, approvals or existing data. User responses add boolean partnerIntent. Professional draft saves synchronize supplied nonempty first/last names to the same user row. The existing professional validator still requires both names before progressing/submitting; draft saving and publication approval rules are unchanged. No SQL migration or Firebase/OTP/SMTP configuration changes.
 
 `GET /metadata/catalog` adds `partnerDirectRegistration: true` to identify support for verified professional drafts without a preliminary identity form.
+
+
+27 November 2026: partnerRegistrationScreens metadata is now 4 (personal details, activities, documents, agreement). The mobile agreement document remains pending; terms copied from the supplied reference are explicitly a draft, with acceptance disabled. Saving remains a draft PUT and does not bypass server submission/approval/commercial controls. No database migration or authentication change.
