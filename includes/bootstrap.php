@@ -28,11 +28,12 @@ function e(?string $value): string { return htmlspecialchars($value ?? '', ENT_Q
 function redirect(string $url): never { header('Location: ' . $url); exit; }
 function flash(string $type, string $message): void { $_SESSION['flash'] = compact('type', 'message'); }
 function csrf(): string { return $_SESSION['csrf'] ??= bin2hex(random_bytes(24)); }
+require_once __DIR__.'/deletion_permissions.php';
 function verify_csrf(): void {
     if (!hash_equals($_SESSION['csrf'] ?? '', $_POST['_csrf'] ?? '')) {
         http_response_code(419); exit('Invalid CSRF token');
     }
-    if (admin() && in_array((string)($_POST['action'] ?? ''), ['delete','restore'], true)) require_owner();
+    if(admin()&&in_array((string)($_POST['action']??''),['delete','restore','clear','archive'],true))require_deletion_permission((string)$_POST['action']);
 }
 function admin(): ?array { return $_SESSION['admin'] ?? null; }
 function require_admin(): void {

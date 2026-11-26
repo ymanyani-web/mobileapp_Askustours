@@ -80,18 +80,18 @@ function deletion_mutate_home(array $plan,bool $restore):void{
  db()->prepare('UPDATE home_config SET config_json=? WHERE id=1')->execute([json_encode($home,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);
 }
 function record_managed_backup(string $type,string $id,string $reason,?array $plan=null):int{
- require_owner();if(!db()->inTransaction())throw new RuntimeException('La copia requiere una transacción activa.');
+ require_deletion_permission('delete');if(!db()->inTransaction())throw new RuntimeException('La copia requiere una transacción activa.');
  $plan??=deletion_snapshot($type,$id,true);$encoded=json_encode(['reason'=>$reason,'backup'=>$plan],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
  if(strlen($encoded)>2000000)throw new RuntimeException('El respaldo supera el tamaño de esta herramienta. Exporta y revisa este caso antes de eliminarlo.');
  db()->prepare("INSERT INTO audit_log(admin_id,action,entity_type,entity_id,details_json) VALUES(?,'entity.deleted',?,?,?)")->execute([admin()['id'],$type,$id,$encoded]);return (int)db()->lastInsertId();
 }
 function delete_managed(string $type,string $id,string $revision,string $reason):int{
- require_owner();if(mb_strlen($reason)<5||mb_strlen($reason)>500)throw new RuntimeException('Indica un motivo de entre 5 y 500 caracteres.');
+ require_deletion_permission('delete');if(mb_strlen($reason)<5||mb_strlen($reason)>500)throw new RuntimeException('Indica un motivo de entre 5 y 500 caracteres.');
  db()->beginTransaction();
  try{
-  lock_owner();$plan=deletion_snapshot($type,$id,true);
+  lock_deletion_actor('delete');$plan=deletion_snapshot($type,$id,true);
   if(!hash_equals(deletion_revision($plan),$revision))throw new RuntimeException('Los datos han cambiado. Revisa el resumen actualizado antes de eliminar.');
-  // Immutable, admin-only database recovery record; no files, passwords or session tokens are backed up.
+  // Immutable, permission-protected database recovery record; no files, passwords or session tokens are backed up.
   $backupId=record_managed_backup($type,$id,$reason,$plan);
   $order=['idempotency_keys','favorites','basket_items','trip_drafts','trip_requests','partner_service_drafts','partner_profiles','wallet_ledger','uploads','reviews','service_calendar','reservations','quotes','driver_services','guide_services','travel_packages','content_documents','banners','home_offers','users'];
   foreach($order as $table)foreach(($plan['rows'][$table]??[]) as $row){$keys=deletion_keys($table);$where=implode(' AND ',array_map(fn($key)=>"`$key`=?",$keys));db()->prepare("DELETE FROM `$table` WHERE $where")->execute(array_map(fn($key)=>$row[$key],$keys));}
@@ -99,9 +99,9 @@ function delete_managed(string $type,string $id,string $revision,string $reason)
  }catch(Throwable $e){if(db()->inTransaction())db()->rollBack();throw $e;}
 }
 function restore_managed(int $backupId):void{
- require_owner();db()->beginTransaction();
+ require_deletion_permission('restore');db()->beginTransaction();
  try{
-  lock_owner();$s=db()->prepare("SELECT * FROM audit_log WHERE id=? AND action='entity.deleted' FOR UPDATE");$s->execute([$backupId]);$event=$s->fetch();if(!$event)throw new RuntimeException('Copia no encontrada.');
+  lock_deletion_actor('restore');$s=db()->prepare("SELECT * FROM audit_log WHERE id=? AND action='entity.deleted' FOR UPDATE");$s->execute([$backupId]);$event=$s->fetch();if(!$event)throw new RuntimeException('Copia no encontrada.');
   $s=db()->prepare("SELECT 1 FROM audit_log WHERE action='entity.restored' AND entity_type='deletion' AND entity_id=?");$s->execute([(string)$backupId]);if($s->fetchColumn())throw new RuntimeException('Esta copia ya fue recuperada.');
   $plan=json_decode($event['details_json'],true,512,JSON_THROW_ON_ERROR)['backup'];
   $order=['users','driver_services','guide_services','travel_packages','content_documents','banners','home_offers','quotes','reservations','service_calendar','reviews','uploads','partner_profiles','partner_service_drafts','wallet_ledger','trip_requests','trip_drafts','basket_items','favorites','idempotency_keys'];
@@ -110,4 +110,20 @@ function restore_managed(int $backupId):void{
   db()->prepare("INSERT INTO audit_log(admin_id,action,entity_type,entity_id,details_json) VALUES(?,'entity.restored','deletion',?,'{}')")->execute([admin()['id'],(string)$backupId]);
   db()->commit();
  }catch(Throwable $e){if(db()->inTransaction())db()->rollBack();throw $e;}
+}
+
+function deletion_history_cutoff(): int {
+    $row=db()->query("SELECT details_json FROM audit_log WHERE action='deletion.history_archived' ORDER BY id DESC LIMIT 1")->fetchColumn();
+    return $row?(int)(json_decode($row,true,512,JSON_THROW_ON_ERROR)['cutoff']??0):0;
+}
+function archive_deletion_history(string $revision): void {
+    require_deletion_permission('archive');db()->beginTransaction();
+    try{
+        lock_deletion_actor('archive');
+        $rows=db()->query("SELECT id FROM audit_log WHERE action='entity.deleted' ORDER BY id FOR UPDATE")->fetchAll();$ids=array_column($rows,'id');
+        if(!hash_equals(hash('sha256',json_encode($ids,JSON_THROW_ON_ERROR)),$revision))throw new RuntimeException('El historial ha cambiado. Recarga antes de limpiarlo.');
+        $cutoff=$ids?(int)max($ids):0;
+        db()->prepare("INSERT INTO audit_log(admin_id,action,entity_type,entity_id,details_json) VALUES(?,'deletion.history_archived','deletion_history',?,?)")->execute([admin()['id'],(string)$cutoff,json_encode(['cutoff'=>$cutoff,'copiesPreserved'=>true],JSON_THROW_ON_ERROR)]);
+        db()->commit();
+    }catch(Throwable $e){if(db()->inTransaction())db()->rollBack();throw $e;}
 }
