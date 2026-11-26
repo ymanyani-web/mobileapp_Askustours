@@ -178,3 +178,8 @@ Catalog publication, quote and reservation gates require independent approved ma
 Admin queues: operations.php?view=partners|drafts|vehicles|documents|corrections. Expiry queue includes professional/vehicle documents expiring in 30 days. Decisions are owner-admin-only, CSRF/revision checked, audited; approval/rejection generates an in-app partner notification in existing profile storage. Push/email notifications are not added.
 
 Approval creates or updates the same service ID in the existing catalog as a non-public draft; publication remains a separate admin action with all gates. Approved price/availability edits update that catalog record without changing its publication status. Agency-owned min/max EUR cents are edited in the existing collaborator review; out-of-policy edits are rejected by the server. Corrected rejected/draft submissions re-enter review after a saved change.
+
+
+## Professional registration entry — 26 November 2026
+
+`POST /auth/firebase-session` accepts an initially nameless `accountRole: partner` draft after verified Firebase proof. Customer first-time registration still requires firstName/lastName. No invented names are inserted. An existing authenticated account opting into professional registration sets partner_intent without changing its stored role, approvals or existing data. User responses add boolean partnerIntent. Professional draft saves synchronize supplied nonempty first/last names to the same user row. The existing professional validator still requires both names before progressing/submitting; draft saving and publication approval rules are unchanged. No SQL migration or Firebase/OTP/SMTP configuration changes.

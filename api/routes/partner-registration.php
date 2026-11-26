@@ -20,7 +20,7 @@ if($path==='me/partner-profile'&&$method==='PUT'){
     $criticalOld=$oldDraft;$criticalNew=$draft;unset($criticalOld['step'],$criticalOld['completedSteps'],$criticalNew['step'],$criticalNew['completedSteps']);
     if($status==='approved'&&$criticalOld!==$criticalNew){$status='submitted';$profile['_reviewState']='pending_review';pause_partner_services($u['id']);partner_registration_event($profile,'profile_changed','profile','La información modificada requiere revisión.');}
     db()->prepare('INSERT INTO partner_profiles(user_id,status,profile_json,revision) VALUES(?,?,?,1) ON DUPLICATE KEY UPDATE status=VALUES(status),profile_json=VALUES(profile_json),revision=revision+1')->execute([$u['id'],$status,encoded($profile)]);
-    db()->prepare('UPDATE users SET partner_intent=1 WHERE id=?')->execute([$u['id']]);
+    db()->prepare("UPDATE users SET partner_intent=1,first_name=CASE WHEN ?<>'' THEN ? ELSE first_name END,last_name=CASE WHEN ?<>'' THEN ? ELSE last_name END WHERE id=?")->execute([$draft['firstName']??'',$draft['firstName']??'',$draft['lastName']??'',$draft['lastName']??'',$u['id']]);
     db()->commit();$s=db()->prepare('SELECT * FROM partner_profiles WHERE user_id=?');$s->execute([$u['id']]);out(partner_profile_data($u['id'],$s->fetch()));
 }
 if($path==='me/partner-profile/submission'&&$method==='POST'){

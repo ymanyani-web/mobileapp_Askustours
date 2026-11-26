@@ -81,6 +81,7 @@ function partner_onboarding_validate(array $draft,string $uid,bool $complete=fal
     $unknown=array_diff(array_keys($draft),$allowed);if($unknown)throw new InvalidArgumentException('Unknown onboarding fields: '.implode(', ',$unknown));
     if(!is_int($draft['step']??null)||$draft['step']<0||$draft['step']>6)throw new InvalidArgumentException('Invalid registration step.');
     foreach($draft as $key=>$value)if(is_string($value)&&mb_strlen($value)>1000)throw new InvalidArgumentException('Field too long: '.$key);
+    foreach(['firstName','lastName'] as $key)if(isset($draft[$key])){if(!is_string($draft[$key])||mb_strlen(trim($draft[$key]))>100)throw new InvalidArgumentException('Invalid name: '.$key);$draft[$key]=trim($draft[$key]);}
     foreach(['categories','languages','completedSteps','workCities','zones','specialties','galleryUploadIds','documents'] as $key)if(isset($draft[$key])&&(!is_array($draft[$key])||!array_is_list($draft[$key])||count($draft[$key])>50))throw new InvalidArgumentException('Invalid collection: '.$key);
     foreach($draft['categories']??[] as $category)if(!in_array($category,['driver','guide','experience','rental','accommodation','other'],true))throw new InvalidArgumentException('Invalid activity.');
     if(!empty($draft['businessType'])&&!in_array($draft['businessType'],['self_employed','company','employee'],true))throw new InvalidArgumentException('Invalid business type.');

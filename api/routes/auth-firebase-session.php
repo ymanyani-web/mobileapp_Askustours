@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__,2).'/includes/firebase_registration.php';
 $body=json_body();require_fields($body,['idToken']);
 $identity=firebase_identity((string)$body['idToken']);
 if($identity['email']===null&&$identity['phone']===null)fail(422,'FIREBASE_IDENTITY_INCOMPLETE','Firebase did not provide a verified email address or phone number.');
@@ -20,7 +21,7 @@ $first=trim((string)($body['firstName']??($displayParts[0]??'')));
 $last=trim((string)($body['lastName']??(count($displayParts)>1?implode(' ',array_slice($displayParts,1)):'')));
 $role=(string)($body['accountRole']??'customer');
 if(!$user){
- $errors=[];if($first==='')$errors['firstName']=['Required for first-time Firebase registration.'];if($last==='')$errors['lastName']=['Required for first-time Firebase registration.'];if(!in_array($role,['customer','partner'],true))$errors['accountRole']=['Expected customer or partner.'];if($errors)fail(422,'VALIDATION_ERROR','The request contains invalid data.',$errors);
+ $errors=firebase_registration_errors($first,$last,$role);if($errors)fail(422,'VALIDATION_ERROR','The request contains invalid data.',$errors);
 }
 if($user){
  $conflictConditions=[];$conflictParameters=[$user['id']];
@@ -39,6 +40,7 @@ if($user){
  $userId=uuid();
  db()->prepare("INSERT INTO users(id,firebase_uid,firebase_provider,first_name,last_name,email,phone,role,partner_intent,verified_at,profile_json,preferences_json) VALUES(?,?,?,?,?,?,?,?,?,NOW(),'{}','{}')")->execute([$userId,$identity['uid'],$provider?:null,$first,$last,$identity['email'],$identity['phone'],$role,$role==='partner']);
 }
+if($role==='partner')db()->prepare('UPDATE users SET partner_intent=1 WHERE id=?')->execute([$userId]);
 $verifiedProfile=db()->prepare('SELECT profile_json FROM users WHERE id=?');$verifiedProfile->execute([$userId]);$identityProfile=decoded($verifiedProfile->fetchColumn());$identityProfile['_verifiedContacts']=['email'=>$identity['email'],'phone'=>$identity['phone']];db()->prepare('UPDATE users SET profile_json=? WHERE id=?')->execute([encoded($identityProfile),$userId]);
 $access=bin2hex(random_bytes(32));$refresh=bin2hex(random_bytes(32));$sessionId=uuid();
 db()->prepare('INSERT INTO sessions(id,user_id,access_token_hash,refresh_token_hash,access_expires_at,refresh_expires_at) VALUES(?,?,?,?,DATE_ADD(NOW(),INTERVAL 1 HOUR),DATE_ADD(NOW(),INTERVAL 30 DAY))')->execute([$sessionId,$userId,hash('sha256',$access),hash('sha256',$refresh)]);

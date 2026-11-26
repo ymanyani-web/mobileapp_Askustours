@@ -34,6 +34,7 @@ const draft={step:0,categories:['driver','guide'],firstName:'Synthetic',lastName
 let profile=(await api('/me/partner-profile')).data;check(profile.status,'draft');
 async function save(value=draft){const result=await api('/me/partner-profile',{method:'PUT',body:{schemaVersion:1,expectedRevision:profile.revision,onboarding:value}});check(result.status,200);profile=result.data;return profile;}
 await save();check(profile.onboarding.categories,['driver','guide']);check(profile.savedAt.length>0,true);
+const savedIdentity=(await api('/me')).data;check(savedIdentity.firstName,draft.firstName);check(savedIdentity.lastName,draft.lastName);check(savedIdentity.partnerIntent,true);
 check((await api('/me/partner-profile',{method:'PUT',body:{expectedRevision:0,onboarding:draft}})).status,409);
 check((await api('/me/partner-profile',{method:'PUT',body:{expectedRevision:profile.revision,status:'approved',onboarding:draft}})).status,422);
 check((await api('/me/partner-profile',{method:'PUT',body:{expectedRevision:profile.revision,onboarding:{...draft,documents:[{requirementId:'identity',uploadId:foreign.id}]}}})).status,422);

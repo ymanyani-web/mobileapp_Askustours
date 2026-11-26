@@ -237,3 +237,8 @@ If no, list the exact missing contract fields or endpoints.
 ```
 
 Do not report a backend item as complete based only on a mocked server. Clearly distinguish isolated tests, staging tests, and production reads. Remove tokens, OTP codes, credentials, personal data, and private upload URLs from the response.
+
+
+## Professional registration entry — 26 November 2026
+
+`POST /auth/firebase-session` accepts an initially nameless `accountRole: partner` draft after verified Firebase proof. Customer first-time registration still requires firstName/lastName. No invented names are inserted. An existing authenticated account opting into professional registration sets partner_intent without changing its stored role, approvals or existing data. User responses add boolean partnerIntent. Professional draft saves synchronize supplied nonempty first/last names to the same user row. The existing professional validator still requires both names before progressing/submitting; draft saving and publication approval rules are unchanged. No SQL migration or Firebase/OTP/SMTP configuration changes.

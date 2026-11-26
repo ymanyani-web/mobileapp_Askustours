@@ -5,6 +5,11 @@ function db(){return new class {function query($sql){return new class {function 
 function owned_upload($uid,$id,$purpose){return $uid==='synthetic' && $id==='owned' && in_array($purpose,['professional-document','professional-photo'],true);}
 $checks=0;
 function check($actual,$expected){global $checks;if($actual!==$expected)throw new RuntimeException('Document policy assertion failed: '.json_encode([$actual,$expected]));$checks++;}
+foreach(['firstName','lastName'] as $missingName){
+ $candidate=['step'=>1,'firstName'=>'Sara','lastName'=>'Lopez'];unset($candidate[$missingName]);
+ try{partner_onboarding_validate($candidate,'synthetic',true);$reason='';}catch(InvalidArgumentException $e){$reason=$e->getMessage();}
+ check($reason,'Required: '.$missingName);
+}
 foreach([
  [['driver'],['identity','driving','transport']],
  [['guide'],['identity','guide']],
