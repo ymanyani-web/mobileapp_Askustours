@@ -47,6 +47,13 @@ function partner_registration_admin_action(string $uid,array $body): void {
             }
             $p['_vehicles'][$id]['status']=$status;$p['_vehicles'][$id]['reason']=$reason;$p['_vehicles'][$id]['reviewedBy']=admin()['id'];$p['_vehicles'][$id]['reviewedAt']=gmdate(DATE_ATOM);$target='vehicles';
             if($status!=='approved')pause_partner_services($uid);
+        }elseif($action==='publication'){
+            $p['_publicationChecks']=[];foreach(['commercial','legal','payout'] as $check)$p['_publicationChecks'][$check]=isset($body[$check]);
+            $min=filter_var($body['priceMinMinor']??1,FILTER_VALIDATE_INT);$max=filter_var($body['priceMaxMinor']??10000000,FILTER_VALIDATE_INT);if($min===false||$max===false||$min<1||$max<$min)throw new RuntimeException('Revisa los límites de precio en céntimos.');
+            $p['_publicationChecks']['priceMinMinor']=$min;$p['_publicationChecks']['priceMaxMinor']=$max;
+            $p['_publicationChecks']['reviewedBy']=admin()['id'];$p['_publicationChecks']['reviewedAt']=gmdate(DATE_ATOM);
+            if(in_array(false,array_intersect_key($p['_publicationChecks'],array_flip(['commercial','legal','payout'])),true))pause_partner_services($uid);
+            $status='changed';$target='publication';
         }elseif($action==='profile'){
             if(!in_array($status,['under_review','changes_requested','approved','rejected','suspended'],true))throw new RuntimeException('Decisión no válida.');
             if(in_array($status,['changes_requested','rejected','suspended'],true)&&mb_strlen($reason)<5)throw new RuntimeException('Indica el motivo de la decisión.');
@@ -59,6 +66,7 @@ function partner_registration_admin_action(string $uid,array $body): void {
                 if(empty($p['_acceptances']))throw new RuntimeException('Faltan las aceptaciones legales registradas.');
                 if(!account_enabled($uid))throw new RuntimeException('La cuenta está restringida.');
             }
+            if($status==='approved')$p['_authorizedActivities']=array_values($draft['categories']??[]);
             $rowStatus=match($status){'under_review'=>'submitted','changes_requested'=>'draft',default=>$status};$p['_reviewState']=$status;$p['_reviewReason']=$reason;
             if($status!=='approved')pause_partner_services($uid);
         }else throw new RuntimeException('Acción no válida.');
@@ -72,7 +80,12 @@ function partner_registration_admin_action(string $uid,array $body): void {
 function partner_registration_admin_form(string $uid,int $revision,string $action,array $hidden,array $states): void {
     if((admin()['role']??'')!=='admin')return;
     echo '<form method="post" class="editor-form"><input type="hidden" name="_csrf" value="'.csrf().'"><input type="hidden" name="user_id" value="'.e($uid).'"><input type="hidden" name="action" value="registration"><input type="hidden" name="registration_action" value="'.e($action).'"><input type="hidden" name="expectedRevision" value="'.$revision.'">';
-    foreach($hidden as $key=>$value)echo '<input type="hidden" name="'.e($key).'" value="'.e($value).'">';
+    foreach($hidden as $key=>$value)if($action!=='publication')echo '<input type="hidden" name="'.e($key).'" value="'.e($value).'">';
+    if($action==='publication'){
+        foreach(['commercial'=>'Condiciones comerciales completadas','legal'=>'Requisitos legales completados','payout'=>'Requisitos de cobro completados'] as $key=>$label)echo '<label><input type="checkbox" name="'.$key.'" '.(!empty($hidden[$key])?'checked':'').'>'.e($label).'</label>';
+        foreach(['priceMinMinor'=>['Precio mínimo (céntimos EUR)',1],'priceMaxMinor'=>['Precio máximo (céntimos EUR)',10000000]] as $key=>$field)echo '<label>'.e($field[0]).'<input type="number" min="1" name="'.$key.'" value="'.(int)($hidden[$key]??$field[1]).'" required></label>';
+        echo '<button class="btn secondary">Guardar controles de publicación</button></form>';return;
+    }
     echo '<label>Decisión<select name="review_status">';foreach($states as $key=>$label)echo '<option value="'.e($key).'">'.e($label).'</option>';echo '</select></label><label>Motivo<textarea name="reason" maxlength="1000"></textarea></label><button class="btn secondary" data-confirm="¿Guardar esta revisión?">Guardar revisión</button></form>';
 }
 
@@ -89,6 +102,7 @@ function render_partner_registration(string $uid,?array $row,array $profile): vo
         if((admin()['role']??'')==='admin')foreach([...($v['exteriorUploadIds']??[]),...($v['interiorUploadIds']??[])] as $image)echo '<a target="_blank" rel="noopener" href="users.php?view=collaborators&amp;id='.e($uid).'&amp;private_document='.e($image).'"><img style="width:140px;height:100px;object-fit:cover;border-radius:12px;margin:8px" alt="Foto del vehículo para revisión" src="users.php?view=collaborators&amp;id='.e($uid).'&amp;private_document='.e($image).'"></a>';foreach($v['documents']??[] as $doc)if((admin()['role']??'')==='admin')echo '<p>'.e($doc['requirementId']).' · '.e($doc['expiresAt']??'Sin caducidad').' <a target="_blank" rel="noopener" href="users.php?view=collaborators&amp;id='.e($uid).'&amp;private_document='.e($doc['uploadId']).'">Ver documento</a></p>';
         partner_registration_admin_form($uid,$revision,'vehicle',['vehicleId'=>$id],['approved'=>'Aprobar vehículo','rejected'=>'Rechazar','suspended'=>'Suspender']);echo '</article>';
     }
+    partner_registration_admin_form($uid,$revision,'publication',$profile['_publicationChecks']??[],[]);
     partner_registration_admin_form($uid,$revision,'profile',[],['under_review'=>'Iniciar revisión','changes_requested'=>'Solicitar correcciones','approved'=>'Aprobar perfil','rejected'=>'Rechazar solicitud','suspended'=>'Suspender']);
     echo '<details><summary>Aceptaciones registradas</summary><pre>'.e(json_encode($profile['_acceptances']??[],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE)).'</pre></details></section>';
 }

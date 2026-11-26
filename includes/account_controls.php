@@ -57,6 +57,11 @@ function apply_account_decision(string $uid,string $action,string $status,string
                 $photo=db()->prepare("SELECT path FROM uploads WHERE id=? AND user_id=? AND purpose='professional-photo'");$photo->execute([$data['professionalPhotoUploadId'],$uid]);$path=$photo->fetchColumn();
                 if(!$path||!public_asset_available($path))throw new RuntimeException('Falta una foto profesional válida del colaborador.');
             }
+            $data=json_decode($profile['profile_json'],true,512,JSON_THROW_ON_ERROR);require_once __DIR__.'/partner_registration.php';
+            if($status==='approved')$data['_authorizedActivities']=array_values($data['onboarding']['categories']??[]);
+            $data['_reviewState']=$status==='submitted'?'pending_review':$status;$data['_reviewReason']=$reason;
+            partner_registration_event($data,'profile_'.$status,'profile','Estado del perfil actualizado.',$reason);
+            db()->prepare('UPDATE partner_profiles SET profile_json=? WHERE user_id=?')->execute([json_encode($data,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),$uid]);
             db()->prepare('UPDATE partner_profiles SET status=?,reviewed_at=NOW(),reviewed_by=?,revision=revision+1 WHERE user_id=?')->execute([$status,admin()['id'],$uid]);
             db()->prepare("INSERT INTO audit_log(admin_id,action,entity_type,entity_id,details_json) VALUES(?,'partner_profile.status_changed','partner_profile',?,?)")->execute([admin()['id'],$uid,json_encode(['status'=>$status,'previousStatus'=>$profile['status'],'reason'=>$reason],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);
             if($status!=='approved')pause_partner_services($uid);

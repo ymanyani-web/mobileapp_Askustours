@@ -7,7 +7,7 @@ if(!in_array($view,['drivers','guides','packages','content'],true))$view='driver
 $map=['drivers'=>['driver_services','service_json'],'guides'=>['guide_services','service_json'],'packages'=>['travel_packages','package_json']];
 function publication_error(string $view,array $payload,array $row=[]):?string{
  if(in_array($view,['drivers','guides'],true)&&!empty($row['owner_user_id'])){
-  if(!partner_service_authorized((string)$row['owner_user_id'],$payload,$view==='drivers'?'driver':'guide'))return 'El perfil o el vehículo asignado no están autorizados.';if(!account_enabled((string)$row['owner_user_id']))return 'La cuenta del colaborador está restringida.';
+  if(!partner_service_authorized((string)$row['owner_user_id'],array_replace($payload,['id'=>$row['id']??'']),$view==='drivers'?'driver':'guide'))return 'El perfil o el vehículo asignado no están autorizados.';if(!account_enabled((string)$row['owner_user_id']))return 'La cuenta del colaborador está restringida.';
   $s=db()->prepare("SELECT status FROM partner_profiles WHERE user_id=?");$s->execute([$row['owner_user_id']]);
   if($s->fetchColumn()!=='approved')return 'Aprueba el registro profesional antes de publicar sus servicios.';
  }

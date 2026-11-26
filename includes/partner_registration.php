@@ -118,7 +118,7 @@ function partner_onboarding_validate(array $draft,string $uid,bool $complete=fal
 function partner_registration_public_data(string $uid,array $profile,array $row): array {
     $draft=$profile['onboarding']??null;if(!is_array($draft))return [];
     $documents=[];foreach($draft['documents']??[] as $document)$documents[]=[...$document,'file'=>upload_reference($uid,$document['uploadId']),'status'=>partner_document_state($document,$profile['_documentReviews'][$document['requirementId']]??null),'reason'=>$profile['_documentReviews'][$document['requirementId']]['reason']??''];
-    return ['onboarding'=>$draft,'documents'=>$documents,'reviewStatus'=>partner_review_state($row,$profile),'reviewReason'=>$profile['_reviewReason']??'','savedAt'=>$profile['_savedAt']??null,'vehicles'=>$profile['_vehicles']??[],'notifications'=>partner_registration_notifications($profile['_notifications']??[]),'canPublish'=>partner_operational($uid),'publicProfile'=>partner_safe_public_profile($draft)];
+    return ['profileVerificationStatus'=>match(partner_review_state($row,$profile)){'draft'=>'incomplete','approved'=>'verified','under_review'=>'pending_review',default=>partner_review_state($row,$profile)},'publicationChecks'=>array_intersect_key($profile['_publicationChecks']??[],array_flip(['commercial','legal','payout'])),'authorizedActivities'=>$profile['_authorizedActivities']??[],'serviceReviews'=>$profile['_serviceReviews']??[], 'onboarding'=>$draft,'documents'=>$documents,'reviewStatus'=>partner_review_state($row,$profile),'reviewReason'=>$profile['_reviewReason']??'','savedAt'=>$profile['_savedAt']??null,'vehicles'=>$profile['_vehicles']??[],'notifications'=>partner_registration_notifications($profile['_notifications']??[]),'canPublish'=>partner_operational($uid)&&count(array_filter(array_intersect_key($profile['_publicationChecks']??[],array_flip(['commercial','legal','payout'])),fn($value)=>$value===true))===3,'publicProfile'=>partner_safe_public_profile($draft)];
 }
 
 function partner_safe_public_profile(array $draft): array {
@@ -131,7 +131,7 @@ function partner_registration_event(array &$profile,string $type,string $target,
 
 function partner_registration_notifications(array $items): array {
     $language=substr((string)($_SERVER['HTTP_ACCEPT_LANGUAGE']??'es'),0,2);$index=['es'=>0,'en'=>1,'ar'=>2][$language]??0;
-    $subjects=['profile'=>['Perfil','Profile','الملف'],'document'=>['Documento','Document','المستند'],'vehicle'=>['Vehículo','Vehicle','المركبة']];
+    $subjects=['service'=>['Servicio','Service','الخدمة'],'profile'=>['Perfil','Profile','الملف'],'document'=>['Documento','Document','المستند'],'vehicle'=>['Vehículo','Vehicle','المركبة']];
     $states=['under_review'=>['En revisión','Under review','قيد المراجعة'],'changes_requested'=>['Correcciones solicitadas','Changes requested','تعديلات مطلوبة'],'approved'=>['Aprobado','Approved','معتمد'],'verified'=>['Verificado','Verified','موثق'],'rejected'=>['Rechazado','Rejected','مرفوض'],'suspended'=>['Suspendido','Suspended','معلق'],'changed'=>['Pendiente de nueva revisión','Awaiting a new review','بانتظار مراجعة جديدة']];
     foreach($items as &$item){$type=(string)($item['type']??'');if($type==='application_submitted')$item['message']=['Solicitud recibida. Pendiente de verificación.','Application received. Pending verification.','تم استلام الطلب. بانتظار التحقق.'][$index];else foreach($subjects as $subject=>$labels)if(str_starts_with($type,$subject.'_')){$state=substr($type,strlen($subject)+1);if(isset($states[$state]))$item['message']=$labels[$index].' · '.$states[$state][$index];break;}if(!empty($item['reason']))$item['message'].="\n".$item['reason'];}unset($item);return $items;
 }
@@ -148,10 +148,43 @@ function partner_commission_rule(string $category,?string $partnerId=null,?strin
     return $chosen;
 }
 
+function partner_price_policy(array $service,array $checks): bool {
+    if(($service['currency']??'EUR')!=='EUR')return false;
+    $min=(int)($checks['priceMinMinor']??1);$max=(int)($checks['priceMaxMinor']??10000000);
+    if(isset($service['pricesCents'])&&!is_array($service['pricesCents']))return false;
+    if(isset($service['packages'])&&!is_array($service['packages']))return false;
+    $prices=array_values($service['pricesCents']??[]);
+    foreach(['priceMinor','basePriceMinor','basePriceCents','priceCents'] as $key)if(isset($service[$key]))$prices[]=$service[$key];
+    foreach($service['packages']??[] as $package){if(is_numeric($package))$prices[]=$package;elseif(is_array($package))$prices[]=$package['priceMinor']??$package['priceCents']??0;}
+    if(!$prices)return false;
+    foreach($prices as $price)if(!is_numeric($price)||(float)$price!==(float)(int)$price||(int)$price<$min||(int)$price>$max)return false;
+    return true;
+}
+
+// Approval belongs to the draft row, never to collaborator-supplied JSON.
+function partner_service_material(array $service): array {
+    if(isset($service['pricesCents'])&&is_array($service['pricesCents'])){$service['_priceOptions']=array_keys($service['pricesCents']);sort($service['_priceOptions']);unset($service['packages']);}
+    foreach(['pricesCents','prices','price','priceMinor','priceCents','availability','closedWeekdays','schedule','schedules','updatedAt','media','id'] as $key)unset($service[$key]);
+    $sort=function($value)use(&$sort){if(!is_array($value))return $value;if(!array_is_list($value))ksort($value);foreach($value as &$item)$item=$sort($item);return $value;};
+    return $sort($service);
+}
+function partner_service_next_state(?array $old,array $service): string {
+    if(!$old)return 'review';
+    if(in_array($old['status'],['draft','rejected'],true)&&json_decode($old['service_json'],true,512,JSON_THROW_ON_ERROR)!==$service)return 'review';
+    if(partner_service_material(json_decode($old['service_json'],true,512,JSON_THROW_ON_ERROR))!==partner_service_material($service))return 'review';
+    return $old['status'];
+}
+function partner_service_approval(string $uid,string $id,string $type,array $service): bool {
+    if($id==='')return false;
+    $s=db()->prepare('SELECT status,service_json FROM partner_service_drafts WHERE id=? AND user_id=? AND service_type=?');$s->execute([$id,$uid,$type]);$row=$s->fetch();
+    return $row&&$row['status']==='approved'&&partner_service_material(json_decode($row['service_json'],true,512,JSON_THROW_ON_ERROR))===partner_service_material($service);
+}
+
 function partner_service_authorized(string $uid,array $service,string $type): bool {
     if(!partner_operational($uid))return false;
     $s=db()->prepare('SELECT profile_json FROM partner_profiles WHERE user_id=?');$s->execute([$uid]);$profile=json_decode($s->fetchColumn()?:'{}',true,512,JSON_THROW_ON_ERROR);
-    if(!isset($profile['onboarding']))return true;
+    if(!partner_service_approval($uid,(string)($service['id']??''),$type,$service))return false;
+    if(!isset($profile['onboarding']))return false;
     if(($profile['onboarding']['businessType']??'')==='employee')return false;
     if(!in_array($type,$profile['onboarding']['categories']??[],true))return false;
     if($type==='driver'){
@@ -159,6 +192,10 @@ function partner_service_authorized(string $uid,array $service,string $type): bo
         if(!$vehicle||($vehicle['status']??'')!=='approved')return false;
         foreach($vehicle['vehicle']['documents']??[] as $doc)if(partner_document_state($doc,null)==='expired')return false;
     }
+    $checks=$profile['_publicationChecks']??[];
+    if(!partner_price_policy($service,$checks))return false;
+    foreach(['commercial','legal','payout'] as $check)if(($checks[$check]??false)!==true)return false;
+    if(!in_array($type,$profile['_authorizedActivities']??[],true))return false;
     return true;
 }
 

@@ -2,11 +2,11 @@
 if(PHP_SAPI!=='cli')exit(2);
 $_SERVER['REQUEST_METHOD']='GET';
 require dirname(__DIR__).'/api/bootstrap.php';
-if($config['db']['host']!=='127.0.0.1'||(int)$config['db']['port']!==33387)throw new RuntimeException('Isolated loopback database only.');
+if($config['db']['host']!=='127.0.0.1'||!in_array((int)$config['db']['port'],[33387,33388],true))throw new RuntimeException('Isolated loopback database only.');
 $fixtureFile=dirname(__DIR__,2).'/.tools/partner-registration-fixture.json';
 if(($argv[1]??'')==='cleanup'){
  $fixture=json_decode(file_get_contents($fixtureFile),true,512,JSON_THROW_ON_ERROR);
- foreach($fixture['users'] as $uid){db()->prepare("DELETE FROM audit_log WHERE entity_id=?")->execute([$uid]);db()->prepare('DELETE FROM partner_profiles WHERE user_id=?')->execute([$uid]);db()->prepare('DELETE FROM users WHERE id=?')->execute([$uid]);}
+ foreach($fixture['users'] as $uid){foreach(['driver_services','guide_services'] as $table)db()->prepare("DELETE FROM $table WHERE owner_user_id=?")->execute([$uid]);db()->prepare("DELETE FROM audit_log WHERE entity_id=?")->execute([$uid]);db()->prepare('DELETE FROM partner_profiles WHERE user_id=?')->execute([$uid]);db()->prepare('DELETE FROM users WHERE id=?')->execute([$uid]);}
  db()->prepare('UPDATE home_config SET config_json=? WHERE id=1')->execute([$fixture['originalHome']]);
  foreach(['test-partner-collaboration','test-partner-privacy','test-partner-economic','test-partner-added-legal'] as $slug)db()->prepare('DELETE FROM content_documents WHERE slug=?')->execute([$slug]);
  echo "Isolated partner fixtures cleaned.\n";exit;

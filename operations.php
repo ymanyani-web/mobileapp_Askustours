@@ -1,5 +1,6 @@
 <?php
 require 'includes/bootstrap.php';require_admin();require 'includes/layout.php';
+if(($_GET['view']??'trips')!=='trips'){require 'includes/partner_review_queue.php';exit;}
 $view=$_GET['view']??'trips';if(!in_array($view,['trips','drafts'],true))$view='trips';
 if($_SERVER['REQUEST_METHOD']==='POST'){
  verify_csrf();$id=(string)($_POST['id']??'');$status=(string)($_POST['status']??'');

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-const base='http://127.0.0.1:8094';
+const base=process.env.ASKUS_TEST_BASE||'http://127.0.0.1:8094';
+assert.match(base,/^http:\/\/127\.0\.0\.1:809[45]$/);
 const fixture=JSON.parse(await fs.readFile(new URL('../../.tools/partner-registration-fixture.json',import.meta.url)));
 let checks=0,cookie;
 const check=(value,expected)=>{assert.deepEqual(value,expected);checks++;};
@@ -20,7 +21,7 @@ check((await api('/me/partner-registration-config',{role:'customer'})).status,40
 const home=await api('/home');check('_partnerRegistration' in home.data,false);
 const image='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jWZkAAAAASUVORK5CYII=';
 async function upload(purpose,role='partner'){
- const result=await api('/uploads',{role,method:'POST',body:{purpose,fileName:'synthetic.png',contentType:'image/png',dataUri:'data:image/png;base64,'+image}});check(result.status,201);return result.data;
+ const result=await api('/uploads',{role,method:'POST',body:{purpose,fileName:'synthetic.png',contentType:'image/png',dataUri:'data:image/png;base64,'+image}});check(result.status,201);assert.ok(result.data.url.startsWith(base+'/'));return result.data;
 }
 const photo=await upload('professional-photo'),identity=await upload('professional-document'),fiscal=await upload('professional-document');
 const foreign=await upload('professional-document','customer');
@@ -71,6 +72,29 @@ const vehicle={brand:'Synthetic',model:'Vehicle',year:'2025',plate:'SYNTHETIC',c
 for(const id of [firstVehicle,secondVehicle]){check((await api('/me/partner-vehicles/'+id,{method:'PUT',body:{expectedRevision:profile.revision,vehicle}})).status,201);profile=(await api('/me/partner-profile')).data;}
 check(Object.keys(profile.vehicles).length,2);await decide('vehicle','approved',{vehicleId:firstVehicle});check(profile.vehicles[firstVehicle].status,'approved');check(profile.vehicles[secondVehicle].status,'pending_review');
 check((await api('/me/partner-vehicles/'+firstVehicle,{method:'PUT',body:{expectedRevision:profile.revision,vehicle:{...vehicle,status:'approved'}}})).status,422);
+// Independent service decisions, tamper resistance and commercial-only edits.
+const serviceId=crypto.randomUUID();
+let serviceBody={id:serviceId,title:{es:'Servicio sintético'},description:{es:'Solo pruebas'},city:'madrid',currency:'EUR',priceCents:5000,hours:2,languages:['es'],maxPeople:4,photoUploadId:null};
+let serviceResult=await api('/me/partner-services/'+serviceId,{method:'PUT',body:{type:'guide',expectedRevision:0,service:serviceBody}});check(serviceResult.status,201);check(serviceResult.data.status,'review');
+check((await api('/me/partner-services/'+serviceId,{method:'PUT',body:{type:'guide',expectedRevision:serviceResult.data.revision,service:{...serviceBody,status:'approved'}}})).status,422);
+check((await api('/me/partner-profile',{method:'PUT',body:{_publicationChecks:{commercial:true}}})).status,422);
+async function reviewService(status,reason='Synthetic decision'){
+ const html=await (await admin('/operations.php?view=drafts&scope=all')).text();
+ const response=await admin('/operations.php?view=drafts',{method:'POST',body:new URLSearchParams({_csrf:field(html,'_csrf'),id:serviceId,revision:String(serviceResult.data.revision),status,reason})});check(response.status,302);
+ serviceResult=await api('/me/partner-services/'+serviceId);profile=(await api('/me/partner-profile')).data;
+}
+await reviewService('approved');check(serviceResult.data.status,'approved');check(profile.status,'approved');
+async function publishService(){const html=await (await admin('/catalog.php?view=guides')).text();check((await admin('/catalog.php?view=guides',{method:'POST',body:new URLSearchParams({_csrf:field(html,'_csrf'),id:serviceId,status:'published'})})).status,302);}
+await publishService();check((await api('/guide-services/'+serviceId)).status,404);
+await decide('publication','changed',{commercial:'on',legal:'on',payout:'on',priceMinMinor:'1000',priceMaxMinor:'10000'});check(profile.canPublish,true);
+await publishService();check((await api('/guide-services/'+serviceId)).status,200);
+
+serviceBody={...serviceBody,priceCents:5500};serviceResult=await api('/me/partner-services/'+serviceId,{method:'PUT',body:{type:'guide',expectedRevision:serviceResult.data.revision,service:serviceBody}});check(serviceResult.status,200);check(serviceResult.data.status,'approved');check((await api('/guide-services/'+serviceId)).data.priceCents,5500);
+check((await api('/me/partner-services/'+serviceId,{method:'PUT',body:{type:'guide',expectedRevision:serviceResult.data.revision,service:{...serviceBody,priceCents:-1}}})).status,422);
+serviceBody={...serviceBody,description:{es:'Recorrido modificado'}};serviceResult=await api('/me/partner-services/'+serviceId,{method:'PUT',body:{type:'guide',expectedRevision:serviceResult.data.revision,service:serviceBody}});check(serviceResult.status,200);check(serviceResult.data.status,'review');check((await api('/guide-services/'+serviceId)).status,404);
+await reviewService('rejected');check(serviceResult.data.status,'rejected');check(profile.status,'approved');check(profile.notifications.some(n=>n.type==='service_rejected'),true);
+await reviewService('draft');check(profile.serviceReviews[serviceId].status,'changes_requested');
+for(const view of ['partners','drafts','vehicles','documents','corrections']){const queue=await admin('/operations.php?view='+view);check(queue.status,200);check((await queue.text()).includes('Fatal error'),false);}
 await save({...draft,taxId:'SYNTHETIC-CHANGED'});check(profile.status,'pending');check(profile.reviewStatus,'pending_review');
 const filtered=await admin('/users.php?view=collaborators&activity=driver&city=madrid&review=submitted');check(filtered.status,200);check((await filtered.text()).includes('Synthetic'),true);
 const settingsPath='/users.php?view=collaborators&registration=settings';const settingsHtml=await (await admin(settingsPath)).text();
@@ -85,4 +109,5 @@ const freshSettings=await (await admin(settingsPath)).text();const percentages=n
 const legalCreate=await admin('/catalog.php?view=content',{method:'POST',body:new URLSearchParams({_csrf:field(contentHtml,'_csrf'),action:'create_document',slug:'test-partner-added-legal',version:'test-v2',title_es:'Documento sintético',body_es:'Texto solo para pruebas locales.',title_en:'Synthetic document',body_en:'Local tests only.',title_ar:'مستند تجريبي',body_ar:'للاختبارات المحلية فقط.',publish:'on'})});check(legalCreate.status,302);check((await api('/content/test-partner-added-legal')).data.version,'test-v2');
 await admin('/logout.php');const operatorLogin=await (await admin('/login.php')).text();check((await admin('/login.php',{method:'POST',body:new URLSearchParams({_csrf:field(operatorLogin,'_csrf'),email:'operator@example.test',password:'password'})})).status,302);check((await admin(settingsPath)).status,403);
 check((await admin(detail+'&private_document='+replacement.id)).status,403);
+const operatorQueue=await (await admin('/operations.php?view=drafts&scope=all')).text();check((await admin('/operations.php?view=drafts',{method:'POST',body:new URLSearchParams({_csrf:field(operatorLogin,'_csrf'),id:serviceId,status:'approved',revision:String(serviceResult.data.revision)})})).status,403);
 console.log(`Partner registration isolated HTTP checks passed: ${checks} assertions.`);
