@@ -188,3 +188,6 @@ Approval creates or updates the same service ID in the existing catalog as a non
 
 
 27 November 2026: partnerRegistrationScreens metadata is now 4 (personal details, activities, documents, agreement). The mobile agreement document remains pending; terms copied from the supplied reference are explicitly a draft, with acceptance disabled. Saving remains a draft PUT and does not bypass server submission/approval/commercial controls. No database migration or authentication change.
+
+
+27 November 2026: fixed professional draft autosave failing with MySQL error 1267 (mixed utf8mb4_general_ci/utf8mb4_unicode_ci coercible values) in the name synchronization UPDATE. Nonempty-name selection now occurs in PHP; SQL only assigns bound values using an allowlisted column map. No schema, API response, authentication or approval changes. Tested 48 combinations of names, connection collations, PDO modes and blank/omitted fields, plus the HTTP registration suite.

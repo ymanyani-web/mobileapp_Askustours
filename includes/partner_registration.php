@@ -126,6 +126,17 @@ function partner_safe_public_profile(array $draft): array {
     return array_intersect_key($draft,array_flip(['publicName','descriptions','languages','experienceYears','specialties','workCities','professionalPhotoUploadId','coverUploadId','galleryUploadIds']));
 }
 
+// Decide which names to update in PHP: comparing bound strings with SQL literals
+// can mix connection and parameter collations on the production server.
+function partner_sync_names(string $uid,array $draft):void {
+    $assignments=['partner_intent=1'];$values=[];
+    foreach(['firstName'=>'first_name','lastName'=>'last_name'] as $field=>$column){
+        if(isset($draft[$field])&&$draft[$field]!==''){$assignments[]=$column.'=?';$values[]=$draft[$field];}
+    }
+    $values[]=$uid;
+    db()->prepare('UPDATE users SET '.implode(',',$assignments).' WHERE id=?')->execute($values);
+}
+
 function partner_registration_event(array &$profile,string $type,string $target,string $message,?string $reason=null): void {
     $items=$profile['_notifications']??[];$items[]=['id'=>bin2hex(random_bytes(12)),'type'=>$type,'target'=>$target,'message'=>$message,'reason'=>$reason,'createdAt'=>gmdate(DATE_ATOM),'read'=>false];$profile['_notifications']=array_slice($items,-100);
 }
