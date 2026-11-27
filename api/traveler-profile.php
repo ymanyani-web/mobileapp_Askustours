@@ -12,16 +12,19 @@ function validate_traveler_extra(mixed $raw):array {
     if(!empty($raw['documentIssueDate'])&&!empty($raw['documentExpiryDate'])&&$raw['documentExpiryDate']<=$raw['documentIssueDate'])fail(422,'VALIDATION_ERROR','Document expiry must follow issue.');
     return $raw;
 }
+function traveler_base_requirements():array{return ['firstName','lastName','birthDate','gender','nationality','phone','email','address','city','postalCode','region','country'];}
 function traveler_requirements(array $service):array {
     $allowed=array_merge(['firstName','lastName','phone','email','address','city','postalCode','country'],traveler_extra_fields());
     $extra=is_array($service['travelerRequirements']??null)?array_values(array_intersect(array_filter($service['travelerRequirements'],'is_string'),$allowed)):[];
-    $extra=array_map(fn($field)=>in_array($field,['documentNumber','documentCountry','documentIssueDate','documentExpiryDate','documentType'],true)?'passportUploadId':$field,$extra);return array_values(array_unique(array_merge(['firstName','lastName','phone'],$extra)));
+    $extra=array_filter($extra,fn($field)=>$field!=='residenceCountry');
+    $extra=array_map(fn($field)=>in_array($field,['documentNumber','documentCountry','documentIssueDate','documentExpiryDate','documentType'],true)?'passportUploadId':$field,$extra);return array_values(array_unique(array_merge(traveler_base_requirements(),$extra)));
 }
 function traveler_profile_values(array $user):array {
     $profile=decoded($user['profile_json']);
     return array_merge(is_array($profile['travelerDetails']??null)?$profile['travelerDetails']:[],['firstName'=>$user['first_name'],'lastName'=>$user['last_name'],'phone'=>$user['phone'],'email'=>$user['email']],array_intersect_key($profile,array_flip(['address','city','postalCode','country'])));
 }
 function require_traveler_profile(array $user,array $requirements):array {
+    $requirements=array_values(array_unique(array_merge(traveler_base_requirements(),array_diff($requirements,['residenceCountry']))));
     $values=traveler_profile_values($user);$errors=[];$snapshot=[];
     foreach($requirements as $field){if(trim((string)($values[$field]??''))==='')$errors['travelerDetails.'.$field]=['Required for this service.'];else $snapshot[$field]=$values[$field];}
     if(in_array('documentExpiryDate',$requirements,true)&&!empty($values['documentExpiryDate'])&&$values['documentExpiryDate']<gmdate('Y-m-d'))$errors['travelerDetails.documentExpiryDate']=['The document has expired.'];
