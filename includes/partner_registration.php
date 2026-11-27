@@ -176,9 +176,20 @@ function partner_price_policy(array $service,array $checks): bool {
 // Approval belongs to the draft row, never to collaborator-supplied JSON.
 function partner_service_material(array $service): array {
     if(isset($service['pricesCents'])&&is_array($service['pricesCents'])){$service['_priceOptions']=array_keys($service['pricesCents']);sort($service['_priceOptions']);unset($service['packages']);}
-    foreach(['pricesCents','prices','price','priceMinor','priceCents','availability','closedWeekdays','schedule','schedules','updatedAt','media','id'] as $key)unset($service[$key]);
+    foreach(['pricesCents','prices','price','priceMinor','priceCents','availability','closedWeekdays','schedule','schedules','updatedAt','media','id','_workspaceState'] as $key)unset($service[$key]);
     $sort=function($value)use(&$sort){if(!is_array($value))return $value;if(!array_is_list($value))ksort($value);foreach($value as &$item)$item=$sort($item);return $value;};
     return $sort($service);
+}
+
+function partner_service_publications(string $uid,array $items):array{
+    $result=[];
+    foreach(['driver'=>'driver_services','guide'=>'guide_services'] as $type=>$table){
+        $ids=array_column(array_filter($items,fn($item)=>($item['type']??'')===$type),'id');
+        if(!$ids)continue;
+        $query=db()->prepare("SELECT id,status FROM $table WHERE owner_user_id=? AND id IN (".implode(',',array_fill(0,count($ids),'?')).')');
+        $query->execute([$uid,...$ids]);foreach($query as $row)$result[$row['id']]=$row['status'];
+    }
+    return $result;
 }
 function partner_service_next_state(?array $old,array $service): string {
     if(!$old)return 'review';
@@ -189,7 +200,7 @@ function partner_service_next_state(?array $old,array $service): string {
 function partner_service_approval(string $uid,string $id,string $type,array $service): bool {
     if($id==='')return false;
     $s=db()->prepare('SELECT status,service_json FROM partner_service_drafts WHERE id=? AND user_id=? AND service_type=?');$s->execute([$id,$uid,$type]);$row=$s->fetch();
-    return $row&&$row['status']==='approved'&&partner_service_material(json_decode($row['service_json'],true,512,JSON_THROW_ON_ERROR))===partner_service_material($service);
+    return $row&&$row['status']==='approved'&&!in_array(json_decode($row['service_json'],true,512,JSON_THROW_ON_ERROR)['_workspaceState']??'active',['paused','archived'],true)&&partner_service_material(json_decode($row['service_json'],true,512,JSON_THROW_ON_ERROR))===partner_service_material($service);
 }
 
 function partner_service_authorized(string $uid,array $service,string $type): bool {

@@ -248,3 +248,18 @@ Do not report a backend item as complete based only on a mocked server. Clearly 
 
 
 27 November 2026: fixed professional draft autosave failing with MySQL error 1267 (mixed utf8mb4_general_ci/utf8mb4_unicode_ci coercible values) in the name synchronization UPDATE. Nonempty-name selection now occurs in PHP; SQL only assigns bound values using an allowlisted column map. No schema, API response, authentication or approval changes. Tested 48 combinations of names, connection collations, PDO modes and blank/omitted fields, plus the HTTP registration suite.
+
+
+## 27 November 2026 — professional workspace v1
+
+Additive, authenticated owner-only API; no database migration or authentication change.
+
+- `GET /me/partner-dashboard`: `schemaVersion:1`, real `activeServices` catalog count, `bookings` count, `pendingRequests` (requested/assigned), `earnings:[{currency,amountMinor}]` from non-void partner ledger, and at most five future accepted reservations with `startsAt`. Empty existing data returns zeros/empty lists. Amounts in different currencies are never combined. Pending profiles may read their own workspace; accepting jobs still requires approval.
+- `POST /me/partner-services/{id}/duplicate`: body `{expectedRevision}`. Returns 201 with new UUID, revision 1, **draft** status, no approval/catalog row. Reuses only the owner's existing media. Does not copy workspace pause/archive state or approval decisions.
+- `POST /me/partner-services/{id}/state`: `{expectedRevision,state:"active"|"paused"|"archived"}`. Transaction with owner row lock and optimistic revision. Pause/archive preserve all booking records and switch catalog visibility to paused. Activation requires the existing independent profile/activity/document/agreement/payout/vehicle/service authorization and commercial policy checks plus an owned catalog row. 403 if unauthorized; 404 for missing/foreign service; 409 for stale revision/not-ready catalog. Actions are audited. No delete endpoint added.
+- Service GET/list adds nullable `publicationStatus` (catalog status independent of approval). Pagination unchanged. Stored `_workspaceState` is server-managed: ordinary draft PUT cannot overwrite/remove it. Publication/quote authorization rejects paused/archived drafts even if stale catalog data were present.
+- `metadata/catalog.partnerWorkspaceVersion=1` signals availability.
+
+Flutter reuses the existing personal profile, registration editor, driver/guide forms, private vehicle management, jobs, terms and ledger. Five professional tabs preserve their state. User-initiated creation shows registered activities only. Rental form definition, connected messaging, payout/invoice management and personalized agreement generation/signature/email remain pending; the UI does not simulate those operations. No new service-detail forms are part of this delivery.
+
+Validation: isolated local HTTP regression (162 assertions), PHP approval policy (35 assertions); Flutter workspace/navigation/registration/profile regression and current delivery report record device/build evidence.

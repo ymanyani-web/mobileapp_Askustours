@@ -16,6 +16,9 @@ async function admin(path,options={}){
 }
 function field(html,name){const value=html.match(new RegExp(`name="${name}" value="([^"]*)"`))?.[1];assert.notEqual(value,undefined);return value;}
 const blockedBooking=await api('/reservation-requests',{role:'customer',method:'POST',body:{}});check(blockedBooking.status,403);check(blockedBooking.error.code,'PHONE_VERIFICATION_REQUIRED');
+check((await api('/me/partner-dashboard',{role:'customer'})).status,403);
+const emptySummary=await api('/me/partner-dashboard');check(emptySummary.status,200);check(emptySummary.data.activeServices,0);check(emptySummary.data.bookings,0);check(emptySummary.data.pendingRequests,0);check(emptySummary.data.earnings,[{currency:'EUR',amountMinor:0}]);check(emptySummary.data.upcoming,[]);
+check((await api('/me/partner-jobs')).status,200);
 const config=(await api('/me/partner-registration-config')).data;check(config.categories.length,6);check(config.documents.map(d=>d.id),['identity','driving','transport','guide']);
 check((await api('/me/partner-registration-config',{role:'customer'})).status,403);
 const home=await api('/home');check('_partnerRegistration' in home.data,false);
@@ -90,6 +93,18 @@ await publishService();check((await api('/guide-services/'+serviceId)).status,40
 await decide('publication','changed',{commercial:'on',legal:'on',payout:'on',priceMinMinor:'1000',priceMaxMinor:'10000'});check(profile.canPublish,true);
 await publishService();check((await api('/guide-services/'+serviceId)).status,200);
 
+// Workspace changes are owner/revision scoped and cannot manufacture an approval.
+check((await api('/me/partner-dashboard')).data.activeServices,1);
+check((await api('/me/partner-services/'+serviceId+'/state',{role:'customer',method:'POST',body:{expectedRevision:serviceResult.data.revision,state:'paused'}})).status,403);
+check((await api('/me/partner-services/'+crypto.randomUUID()+'/state',{method:'POST',body:{expectedRevision:1,state:'paused'}})).status,404);
+check((await api('/me/partner-services/'+serviceId+'/state',{method:'POST',body:{expectedRevision:0,state:'paused'}})).status,409);
+const copy=await api('/me/partner-services/'+serviceId+'/duplicate',{method:'POST',body:{expectedRevision:serviceResult.data.revision}});check(copy.status,201);check(copy.data.status,'draft');check(copy.data.id!==serviceId,true);
+check((await api('/me/partner-services/'+copy.data.id+'/state',{method:'POST',body:{expectedRevision:1,state:'active'}})).status,403);
+check((await api('/me/partner-services/'+copy.data.id)).data.revision,1);
+let paused=await api('/me/partner-services/'+serviceId+'/state',{method:'POST',body:{expectedRevision:serviceResult.data.revision,state:'paused'}});check(paused.status,200);check(paused.data.service._workspaceState,'paused');check((await api('/guide-services/'+serviceId)).status,404);check((await api('/me/partner-dashboard')).data.activeServices,0);
+let savedPaused=await api('/me/partner-services/'+serviceId,{method:'PUT',body:{type:'guide',expectedRevision:paused.data.revision,service:{...serviceBody,_workspaceState:'active'}}});check(savedPaused.status,200);check(savedPaused.data.service._workspaceState,'paused');check((await api('/guide-services/'+serviceId)).status,404);
+let archived=await api('/me/partner-services/'+serviceId+'/state',{method:'POST',body:{expectedRevision:savedPaused.data.revision,state:'archived'}});check(archived.status,200);check((await api('/me/partner-services/'+serviceId)).data.service._workspaceState,'archived');
+serviceResult=await api('/me/partner-services/'+serviceId+'/state',{method:'POST',body:{expectedRevision:archived.data.revision,state:'active'}});check(serviceResult.status,200);check((await api('/guide-services/'+serviceId)).status,200);check((await api('/me/partner-dashboard')).data.activeServices,1);
 serviceBody={...serviceBody,priceCents:5500};serviceResult=await api('/me/partner-services/'+serviceId,{method:'PUT',body:{type:'guide',expectedRevision:serviceResult.data.revision,service:serviceBody}});check(serviceResult.status,200);check(serviceResult.data.status,'approved');check((await api('/guide-services/'+serviceId)).data.priceCents,5500);
 check((await api('/me/partner-services/'+serviceId,{method:'PUT',body:{type:'guide',expectedRevision:serviceResult.data.revision,service:{...serviceBody,priceCents:-1}}})).status,422);
 serviceBody={...serviceBody,description:{es:'Recorrido modificado'}};serviceResult=await api('/me/partner-services/'+serviceId,{method:'PUT',body:{type:'guide',expectedRevision:serviceResult.data.revision,service:serviceBody}});check(serviceResult.status,200);check(serviceResult.data.status,'review');check((await api('/guide-services/'+serviceId)).status,404);
