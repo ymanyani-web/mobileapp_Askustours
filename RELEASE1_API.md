@@ -206,3 +206,8 @@ Additive, authenticated owner-only API; no database migration or authentication 
 Flutter reuses the existing personal profile, registration editor, driver/guide forms, private vehicle management, jobs, terms and ledger. Five professional tabs preserve their state. User-initiated creation shows registered activities only. Rental form definition, connected messaging, payout/invoice management and personalized agreement generation/signature/email remain pending; the UI does not simulate those operations. No new service-detail forms are part of this delivery.
 
 Validation: isolated local HTTP regression (162 assertions), PHP approval policy (35 assertions); Flutter workspace/navigation/registration/profile regression and current delivery report record device/build evidence.
+
+
+## Customer planning extension, 2026-11-28
+
+See CUSTOMER_PLANNING_2026_11_28.md. Customer traveler policy version 3 requires complete personal/contact/billing data for requests and basket writes. Passport remains service-specific; residence country is excluded. Basket PUT supports type `planning` with a `plan` snapshot, server-controlled planningFee and paymentStatus `notCollected`. No Redsys charging endpoint is active. Apply the additive planning basket migration before use.
