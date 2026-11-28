@@ -4,13 +4,15 @@ require 'includes/home_content.php';
 require 'includes/account_controls.php';
 $operations=array_fill_keys(array_keys(reservation_labels()),0);
 foreach(db()->query('SELECT status,COUNT(*) total FROM reservations GROUP BY status')->fetchAll() as $row)$operations[$row['status']]=(int)$row['total'];
+$chauffeurCounts=db()->query("SELECT JSON_UNQUOTE(JSON_EXTRACT(answers_json,'$.workflow')) state,COUNT(*) total FROM trip_requests WHERE JSON_UNQUOTE(JSON_EXTRACT(answers_json,'$.requestType'))='chauffeur' AND JSON_EXTRACT(answers_json,'$.reservationId') IS NULL GROUP BY state")->fetchAll();
+foreach($chauffeurCounts as $row){if($row['state']==='cancelled')$operations['cancelled']+=(int)$row['total'];else $operations['requested']+=(int)$row['total'];}
 $counts=[];
 $queries=[
  'customers'=>"SELECT COUNT(*) FROM users WHERE role='customer'",
  'partners'=>"SELECT COUNT(*) FROM users WHERE role='partner' OR partner_intent=1",
- 'reservations'=>"SELECT COUNT(*) FROM reservations",
+ 'reservations'=>"SELECT (SELECT COUNT(*) FROM reservations)+(SELECT COUNT(*) FROM trip_requests WHERE JSON_UNQUOTE(JSON_EXTRACT(answers_json,'$.requestType'))='chauffeur' AND JSON_EXTRACT(answers_json,'$.reservationId') IS NULL)",
  'pendingPartners'=>"SELECT COUNT(*) FROM partner_profiles WHERE status='submitted'",
- 'tripRequests'=>"SELECT COUNT(*) FROM trip_requests WHERE status<>'draft'",
+ 'tripRequests'=>"SELECT COUNT(*) FROM trip_requests WHERE status<>'draft' AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(answers_json,'$.requestType')),'')<>'chauffeur'",
  'publishedServices'=>"SELECT (SELECT COUNT(*) FROM driver_services WHERE status='published')+(SELECT COUNT(*) FROM guide_services WHERE status='published')"
 ];
 foreach($queries as $key=>$sql)$counts[$key]=(int)db()->query($sql)->fetchColumn();
